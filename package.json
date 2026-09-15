@@ -1,0 +1,28 @@
+{
+  "name": "agent-deck",
+  "version": "0.1.0",
+  "description": "A terminal multiplexer and orchestration layer for running a fleet of Claude Code sessions as coordinated workers.",
+  "license": "MIT",
+  "type": "module",
+  "bin": {
+    "agent-deck": "./dist/cli.js"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "dev": "tsx src/cli.ts",
+    "test": "vitest run",
+    "lint": "eslint src"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^5.0.1"
+  },
+  "dependencies": {
+    "commander": "^12.1.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
