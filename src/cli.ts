@@ -4,6 +4,7 @@ import { homedir } from "node:os";
 import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { SessionRegistry } from "./registry.js";
+import { launchDeck } from "./tui.js";
 
 const storePath = join(homedir(), ".agent-deck", "sessions.json");
 
@@ -45,6 +46,22 @@ program
     });
     await registry.save();
     console.log(`Registered "${name}" as ${id}`);
+  });
+
+program
+  .command("watch <names...>")
+  .description("Spawn a claude session per name and show them in a split-pane view")
+  .option("--command <cmd>", "command to spawn for each pane", "claude")
+  .action(async (names: string[], opts: { command: string }) => {
+    const { cleanup } = launchDeck(
+      names.map((name) => ({ id: name, title: name, command: opts.command })),
+    );
+    const shutdown = () => {
+      cleanup();
+      process.exit(0);
+    };
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
   });
 
 program.parseAsync(process.argv);

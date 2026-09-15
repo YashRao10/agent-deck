@@ -15,12 +15,17 @@
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
+    "@types/react": "^19.3.0",
+    "ink-testing-library": "^4.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
     "vitest": "^5.0.1"
   },
   "dependencies": {
-    "commander": "^12.1.0"
+    "commander": "^12.1.0",
+    "ink": "^7.1.1",
+    "node-pty": "^1.1.0",
+    "react": "^19.3.0"
   },
   "engines": {
     "node": ">=18"
