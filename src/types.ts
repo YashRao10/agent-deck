@@ -6,6 +6,8 @@ export interface AgentSession {
   host: string;
   status: SessionStatus;
   lastSeen: string;
+  /** Unix socket path a `watch` pane listens on, if this session is a live local pane. */
+  socketPath?: string;
 }
 
 export interface DeckMessage {

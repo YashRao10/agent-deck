@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { randomUUID } from "node:crypto";
 import { SessionRegistry } from "./registry.js";
 import { launchDeck } from "./tui.js";
+import { sendToSessionSocket } from "./ipc.js";
 
 const storePath = join(homedir(), ".agent-deck", "sessions.json");
 
@@ -53,15 +54,43 @@ program
   .description("Spawn a claude session per name and show them in a split-pane view")
   .option("--command <cmd>", "command to spawn for each pane", "claude")
   .action(async (names: string[], opts: { command: string }) => {
-    const { cleanup } = launchDeck(
+    const { cleanup } = await launchDeck(
       names.map((name) => ({ id: name, title: name, command: opts.command })),
+      { storePath },
     );
     const shutdown = () => {
-      cleanup();
-      process.exit(0);
+      cleanup()
+        .catch((err) => console.error("Error during shutdown:", err))
+        .finally(() => process.exit(0));
     };
     process.on("SIGINT", shutdown);
     process.on("SIGTERM", shutdown);
+  });
+
+program
+  .command("send <sessionId> <message>")
+  .description("Send a message into a live `watch` pane from another terminal/process")
+  .action(async (sessionId: string, message: string) => {
+    const registry = new SessionRegistry(storePath);
+    await registry.load();
+    const session = registry.get(sessionId) ?? registry.list().find((s) => s.name === sessionId);
+    if (!session) {
+      console.error(`Unknown session "${sessionId}". Run \`agent-deck list\` to see known sessions.`);
+      process.exitCode = 1;
+      return;
+    }
+    if (!session.socketPath) {
+      console.error(`Session "${sessionId}" has no live pane to deliver to (not spawned by \`watch\`).`);
+      process.exitCode = 1;
+      return;
+    }
+    try {
+      await sendToSessionSocket(session.socketPath, message);
+      console.log(`Sent to "${session.name}" (${session.id}).`);
+    } catch (err) {
+      console.error(`Failed to reach "${session.name}" (${session.id}):`, (err as Error).message);
+      process.exitCode = 1;
+    }
   });
 
 program.parseAsync(process.argv);
