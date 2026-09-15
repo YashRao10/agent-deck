@@ -46,10 +46,14 @@ renders them side by side with an `ink` split-pane UI (`ClaudePtyTransport`
 implements `Transport`, so the router can address a live pane the same way
 it addresses any other session).
 
-Not yet wired up: the CLI's `register`/`list`/`watch` commands don't share
-state yet (`watch` spawns ad hoc, it doesn't consult the registry), and
-there's no way to route a `MessageRouter.sendMessage` call into a running
-`watch` pane from another terminal/process. That's the next seam to close.
+`watch` now registers each spawned pane in the same `SessionRegistry` store
+`register`/`list` use, and a new `agent-deck send <session-id> <message>`
+command lets a second terminal/process route a message into a live pane.
+Each spawned pane opens a small unix socket (`~/.agent-deck/sockets/<id>.sock`);
+`send` connects to it, and the pane's process runs the delivered text through
+its own `MessageRouter.sendMessage`, which writes it into the pane's
+`ClaudePtyTransport` as a line of input. Sessions are marked `offline` (not
+removed) when their `watch` process shuts down, so `list` still shows history.
 
 **Note on install:** `node-pty` ships a native `spawn-helper` binary that
 needs its executable bit set by its postinstall script. If your npm/CI
@@ -71,6 +75,9 @@ node dist/cli.js list
 node dist/cli.js watch worker-1 worker-2
 # or point it at any command for local testing:
 node dist/cli.js watch a b --command bash
+
+# from a second terminal, route a message into a live pane
+node dist/cli.js send worker-1 "check CI"
 ```
 
 ## Development

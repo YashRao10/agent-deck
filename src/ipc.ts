@@ -1,0 +1,68 @@
+import { createServer, connect } from "node:net";
+import { mkdir, rm } from "node:fs/promises";
+import { dirname, join } from "node:path";
+import { homedir } from "node:os";
+
+/**
+ * Cross-process delivery for a single live `watch` pane. Each spawned pane
+ * listens on its own unix socket; a `send` invocation from another terminal
+ * connects, writes one line, and disconnects. Deliberately just newline-
+ * delimited text — the router/CLI layer is what turns that into a DeckMessage.
+ */
+
+export function socketPathFor(sessionId: string): string {
+  return join(homedir(), ".agent-deck", "sockets", `${sessionId}.sock`);
+}
+
+export interface SessionSocketServer {
+  socketPath: string;
+  close(): Promise<void>;
+}
+
+export async function startSessionSocketServer(
+  socketPath: string,
+  onMessage: (body: string) => void,
+): Promise<SessionSocketServer> {
+  await mkdir(dirname(socketPath), { recursive: true });
+  await rm(socketPath, { force: true });
+
+  const server = createServer((socket) => {
+    let buffer = "";
+    socket.on("data", (chunk) => {
+      buffer += chunk.toString("utf8");
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        if (line.length === 0) continue;
+        onMessage(line);
+      }
+    });
+  });
+
+  await new Promise<void>((resolve, reject) => {
+    server.once("error", reject);
+    server.listen(socketPath, resolve);
+  });
+
+  return {
+    socketPath,
+    close: () =>
+      new Promise<void>((resolve) => {
+        server.close(() => resolve());
+      }).then(() => rm(socketPath, { force: true })),
+  };
+}
+
+export function sendToSessionSocket(socketPath: string, body: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const socket = connect(socketPath);
+    socket.once("connect", () => {
+      socket.end(`${body}\n`);
+    });
+    socket.once("error", (err) => {
+      socket.destroy();
+      reject(err);
+    });
+    socket.once("close", () => resolve());
+  });
+}
