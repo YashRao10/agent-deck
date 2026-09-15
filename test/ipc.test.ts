@@ -1,7 +1,5 @@
-import { describe, expect, it, afterEach } from "vitest";
-import { mkdtemp, rm } from "node:fs/promises";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { describe, expect, it } from "vitest";
+import { randomUUID } from "node:crypto";
 import { sendToSessionSocket, socketPathFor, startSessionSocketServer } from "../src/ipc.js";
 
 describe("socketPathFor", () => {
@@ -11,16 +9,12 @@ describe("socketPathFor", () => {
   });
 });
 
+// Always go through socketPathFor rather than an arbitrary filesystem path:
+// on Windows it returns a \\.\pipe\ name, and a plain path under a temp dir
+// fails with EACCES there (see the comment in src/ipc.ts).
 describe("session socket server", () => {
-  let dir: string;
-
-  afterEach(async () => {
-    if (dir) await rm(dir, { recursive: true, force: true });
-  });
-
   it("delivers a sent line to the server's message handler", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-ipc-"));
-    const socketPath = join(dir, "worker-1.sock");
+    const socketPath = socketPathFor(`test-${randomUUID()}`);
 
     const received: string[] = [];
     const server = await startSessionSocketServer(socketPath, (body) => received.push(body));
@@ -32,14 +26,12 @@ describe("session socket server", () => {
   });
 
   it("rejects when nothing is listening", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-ipc-"));
-    const socketPath = join(dir, "ghost.sock");
+    const socketPath = socketPathFor(`ghost-${randomUUID()}`);
     await expect(sendToSessionSocket(socketPath, "hello")).rejects.toThrow();
   });
 
-  it("removes the socket file on close", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-ipc-"));
-    const socketPath = join(dir, "worker-1.sock");
+  it("stops accepting connections after close", async () => {
+    const socketPath = socketPathFor(`test-${randomUUID()}`);
     const server = await startSessionSocketServer(socketPath, () => {});
     await server.close();
     await expect(sendToSessionSocket(socketPath, "hello")).rejects.toThrow();

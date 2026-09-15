@@ -5,12 +5,25 @@ import { homedir } from "node:os";
 
 /**
  * Cross-process delivery for a single live `watch` pane. Each spawned pane
- * listens on its own unix socket; a `send` invocation from another terminal
+ * listens on its own local socket; a `send` invocation from another terminal
  * connects, writes one line, and disconnects. Deliberately just newline-
  * delimited text — the router/CLI layer is what turns that into a DeckMessage.
+ *
+ * `net.Server.listen(path)` means two different things depending on OS: a
+ * real Unix domain socket file on macOS/Linux, but a Windows named pipe on
+ * Windows — and named pipes live in a global `\\.\pipe\` namespace, not on
+ * the filesystem, so passing an arbitrary directory path there fails with
+ * EACCES. socketPathFor branches on `process.platform` so callers never have
+ * to think about the difference; only the two isWindowsPipe checks below
+ * (skip mkdir/rm — there's no on-disk file to create or clean up) know it.
  */
 
+const isWindowsPipe = process.platform === "win32";
+
 export function socketPathFor(sessionId: string): string {
+  if (isWindowsPipe) {
+    return `\\\\.\\pipe\\agent-deck-${sessionId}`;
+  }
   return join(homedir(), ".agent-deck", "sockets", `${sessionId}.sock`);
 }
 
@@ -23,8 +36,10 @@ export async function startSessionSocketServer(
   socketPath: string,
   onMessage: (body: string) => void,
 ): Promise<SessionSocketServer> {
-  await mkdir(dirname(socketPath), { recursive: true });
-  await rm(socketPath, { force: true });
+  if (!isWindowsPipe) {
+    await mkdir(dirname(socketPath), { recursive: true });
+    await rm(socketPath, { force: true });
+  }
 
   const server = createServer((socket) => {
     let buffer = "";
@@ -49,7 +64,7 @@ export async function startSessionSocketServer(
     close: () =>
       new Promise<void>((resolve) => {
         server.close(() => resolve());
-      }).then(() => rm(socketPath, { force: true })),
+      }).then(() => (isWindowsPipe ? undefined : rm(socketPath, { force: true }))),
   };
 }
 
