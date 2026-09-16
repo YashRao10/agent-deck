@@ -78,7 +78,7 @@ describe("launchDeck", () => {
   });
 
   it("marks a session crashed the moment its pane exits unexpectedly, without waiting for cleanup", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-tui-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-tui-"));
     const storePath = join(dir, "sessions.json");
     const pty = fakePty();
     spawnMock.mockReturnValue(pty);
@@ -101,7 +101,7 @@ describe("launchDeck", () => {
   });
 
   it("marks a cleanly-exited pane offline, not crashed", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-tui-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-tui-"));
     const storePath = join(dir, "sessions.json");
     const pty = fakePty();
     spawnMock.mockReturnValue(pty);
@@ -121,7 +121,7 @@ describe("launchDeck", () => {
   });
 
   it("does not reclassify a session as crashed when cleanup()'s own kill() triggers the exit", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-tui-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-tui-"));
     const storePath = join(dir, "sessions.json");
     const pty = fakePty();
     spawnMock.mockReturnValue(pty);
