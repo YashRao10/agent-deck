@@ -36,6 +36,7 @@
   a { color: var(--accent); }
 
   .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+  .wrap-wide { max-width: 1140px; margin: 0 auto; padding: 0 16px; }
 
   header.hero {
     padding: 4.5rem 0 3.5rem;
@@ -155,7 +156,21 @@
 </header>
 
 <section>
-  <div class="wrap">
+  <div class="wrap-wide">
+    <h2>Read-only dashboard</h2>
+    <div class="media-frame">
+      <img src="dashboard-screenshot.jpg" alt="MACD dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline" />
+    </div>
+    <p class="media-caption">
+      <code class="mono">macd dashboard</code> — a small <code class="mono">node:http</code> server with no
+      new dependencies, reflecting the same on-disk state as the CLI. No send/assign/control endpoint —
+      the terminal UI and CLI stay the real control surfaces.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap-wide">
     <h2>Live orchestration, not just a viewer</h2>
     <div class="media-frame">
       <img src="watch-demo.gif" alt="macd watch: two live panes, each running an independent session, with a message routed into each pane from a second terminal via macd send" />
@@ -196,20 +211,6 @@
           registry reflects what actually happened, not a uniform "offline."</p>
       </div>
     </div>
-  </div>
-</section>
-
-<section>
-  <div class="wrap">
-    <h2>Read-only dashboard</h2>
-    <div class="media-frame">
-      <img src="dashboard-screenshot.jpg" alt="MACD dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline" />
-    </div>
-    <p class="media-caption">
-      <code class="mono">macd dashboard</code> — a small <code class="mono">node:http</code> server with no
-      new dependencies, reflecting the same on-disk state as the CLI. No send/assign/control endpoint —
-      the terminal UI and CLI stay the real control surfaces.
-    </p>
   </div>
 </section>
 
