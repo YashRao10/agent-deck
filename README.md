@@ -56,13 +56,25 @@ it into the pane's `ClaudePtyTransport` as a line of input. Sessions are
 marked `offline` (not removed) when their `watch` process shuts down, so
 `list` still shows history.
 
+Tasks get the same cross-process treatment as sessions: `agent-deck assign
+<session-id> <description>` creates a task in a persisted `TaskStore`
+(`~/.agent-deck/tasks.json`), `agent-deck tasks` lists them, and
+`agent-deck task-status <task-id> <status>` moves one through
+pending/in_progress/done/failed. This is deliberately a separate store from
+`MessageRouter`'s own in-memory task map — the router's version is a
+transient view for a single process (a `watch` pane's own router); the
+`TaskStore` is what the CLI and dashboard read and write across processes.
+Every `send` also appends to a capped `MessageLog` (`~/.agent-deck/messages.json`,
+last 200 entries) so there's a record of what's actually been said.
+
 There's also a read-only `agent-deck dashboard` — a small `node:http` server
-(`src/dashboard.ts`, no new dependencies) that serves a live-updating HTML
-table of the registry, so the fleet can be shown in a browser without cloning
-the repo and running the CLI. It only reads `~/.agent-deck/sessions.json` on
-every request; it has no send/control endpoint. The terminal UI stays the one
-real control surface — the dashboard is a secondary visualization on top of
-it, not a second implementation of it.
+(`src/dashboard.ts`, no new dependencies) rendering three live-updating
+panels: Sessions, Tasks, and an Activity feed of recent messages, so the
+fleet can be shown in a browser without cloning the repo and running the
+CLI. It only reads the JSON stores above on every request; it has no
+send/assign/control endpoint. The terminal UI and the CLI's `assign`/`send`
+commands stay the real control surfaces — the dashboard is a secondary
+visualization on top of them, not a second implementation of them.
 
 **Note on install:** `node-pty` ships a native `spawn-helper` binary that
 needs its executable bit set by its postinstall script. If your npm/CI
@@ -88,7 +100,12 @@ node dist/cli.js watch a b --command bash
 # from a second terminal, route a message into a live pane
 node dist/cli.js send worker-1 "check CI"
 
-# read-only web view of the registry (defaults to http://127.0.0.1:4317)
+# track work assigned to a session
+node dist/cli.js assign worker-1 "review the auth PR"
+node dist/cli.js tasks
+node dist/cli.js task-status <task-id> in_progress
+
+# read-only web view of sessions, tasks, and activity (defaults to http://127.0.0.1:4317)
 node dist/cli.js dashboard
 ```
 
