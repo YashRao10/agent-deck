@@ -10,8 +10,6 @@ machines: a Windows session acting as orchestrator ("main") and a MacBook
 session acting as a worker, using exactly the kind of cross-session
 delegation `agent-deck` is meant to formalize and visualize.
 
-![agent-deck dashboard showing two sessions, one busy and one idle](docs/dashboard-screenshot.jpg)
-
 ## Architecture
 
 Two layers, deliberately decoupled by a `Transport` interface
@@ -67,10 +65,12 @@ Every `send` also appends to a capped `MessageLog` (`~/.agent-deck/messages.json
 last 200 entries) so there's a record of what's actually been said.
 
 There's also a read-only `agent-deck dashboard` — a small `node:http` server
-(`src/dashboard.ts`, no new dependencies) rendering three live-updating
-panels: Sessions, Tasks, and an Activity feed of recent messages, so the
-fleet can be shown in a browser without cloning the repo and running the
-CLI. It only reads the JSON stores above on every request; it has no
+(`src/dashboard.ts`, no new dependencies) with a card-based layout: session
+cards with a live status indicator and host chip, a 4-lane Kanban board
+(Pending/In Progress/Done/Failed) for tasks, and a timeline-style activity
+feed of recent messages. A dynamic hero tagline summarizes the fleet at a
+glance (e.g. "Watching 4 sessions across 3 hosts, 2 busy right now"). It
+only reads the JSON stores above on every request; it has no
 send/assign/control endpoint. The terminal UI and the CLI's `assign`/`send`
 commands stay the real control surfaces — the dashboard is a secondary
 visualization on top of them, not a second implementation of them.
