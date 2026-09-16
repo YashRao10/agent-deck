@@ -22,6 +22,7 @@ const SEED_SESSIONS: Array<Omit<AgentSession, "id" | "lastSeen"> & { minutesAgo:
   { name: "docs-worker", host: "macbook", status: "idle", minutesAgo: 4 },
   { name: "test-runner", host: "macbook", status: "busy", minutesAgo: 1 },
   { name: "release-worker", host: "windows", status: "offline", minutesAgo: 42 },
+  { name: "flaky-worker", host: "macbook", status: "crashed", minutesAgo: 8 },
 ];
 
 const SEED_TASKS: Array<{ assignedTo: string; description: string; status: Task["status"]; hoursAgo: number }> = [

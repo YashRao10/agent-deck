@@ -1,4 +1,4 @@
-export type SessionStatus = "idle" | "busy" | "offline";
+export type SessionStatus = "idle" | "busy" | "offline" | "crashed";
 
 export interface AgentSession {
   id: string;

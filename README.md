@@ -33,10 +33,13 @@ Two layers, deliberately decoupled by a `Transport` interface
 - **Terminal/PTY layer** (`src/pty-transport.ts`, `src/ui/`, `src/tui.tsx`).
   Spawns real `claude` processes via `node-pty` (`ClaudePtyTransport`),
   renders them as split panes with `ink` (`Pane`/`App`), and implements
-  `Transport` so the router can move messages in and out of each pane. This
-  layer is platform-sensitive (native PTY bindings build far more easily on
-  macOS/Linux than Windows), so it was built and verified on the MacBook
-  side first.
+  `Transport` so the router can move messages in and out of each pane. It was
+  built and verified on the MacBook side first, since native PTY bindings
+  build more easily on macOS/Linux than Windows — but it's since been
+  verified working on Windows too: `watch`/`send` both function, and the
+  socket layer that connects them uses a genuine cross-platform abstraction
+  (a real Unix domain socket on macOS/Linux, a named pipe on Windows) rather
+  than one platform being an afterthought.
 
 ```
 ┌─────────────────────────────┐
@@ -53,7 +56,7 @@ Two layers, deliberately decoupled by a `Transport` interface
 
 Session registry, message router, PTY/rendering layer, cross-process
 messaging, task tracking, and a read-only dashboard are all implemented and
-tested (`npm test`, 48 tests passing).
+tested (`npm test`, 53 tests passing).
 
 `agent-deck seed` (`src/seed.ts`) overwrites the sessions/tasks/messages
 stores with a fixed demo fleet, timestamped relative to `now`. It exists so
@@ -68,9 +71,17 @@ command lets a second terminal/process route a message into a live pane.
 Each spawned pane opens a small unix socket (`~/.agent-deck/sockets/<id>.sock`,
 a named pipe on Windows); `send` connects to it, and the pane's process runs
 the delivered text through its own `MessageRouter.sendMessage`, which writes
-it into the pane's `ClaudePtyTransport` as a line of input. Sessions are
-marked `offline` (not removed) when their `watch` process shuts down, so
-`list` still shows history.
+it into the pane's `ClaudePtyTransport` as a line of input.
+
+A pane's status now distinguishes a crash from a clean exit, live, without
+waiting for `watch` itself to shut down: if the spawned process inside a
+pane dies on its own — the command finishes, or crashes — `SessionRegistry`
+is updated to `offline` or `crashed` the moment that happens, based on the
+real exit code/signal. Killing `watch` itself (Ctrl+C) still marks every
+still-running pane `offline`, the same as before — the two paths are told
+apart internally so an intentional shutdown never gets misreported as a
+crash just because the OS happened to deliver it via a signal. Sessions are
+never removed on exit, so `list` (and the dashboard) still show history.
 
 Tasks get the same cross-process treatment as sessions: `agent-deck assign
 <session-id> <description>` creates a task in a persisted `TaskStore`

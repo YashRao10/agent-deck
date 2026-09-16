@@ -20,11 +20,20 @@ export interface ClaudePtyTransportOptions {
  * "from" this session, so the router and any renderer only ever see
  * DeckMessage, never raw terminal bytes.
  */
+export interface PtyExitInfo {
+  exitCode: number;
+  signal?: number;
+  /** True if this exit was caused by our own kill(), not the pane's command exiting/crashing on its own. */
+  intentional: boolean;
+}
+
 export class ClaudePtyTransport implements Transport {
   private readonly ptyProcess: pty.IPty;
   private readonly handlers: Array<(message: DeckMessage) => void> = [];
+  private readonly exitHandlers: Array<(info: PtyExitInfo) => void> = [];
   private lineBuffer = "";
   private connected = true;
+  private killedIntentionally = false;
 
   constructor(private readonly options: ClaudePtyTransportOptions) {
     this.ptyProcess = pty.spawn(options.command ?? "claude", options.args ?? [], {
@@ -36,9 +45,24 @@ export class ClaudePtyTransport implements Transport {
     });
 
     this.ptyProcess.onData((chunk) => this.handleChunk(chunk));
-    this.ptyProcess.onExit(() => {
+    this.ptyProcess.onExit(({ exitCode, signal }) => {
       this.connected = false;
+      for (const handler of this.exitHandlers) {
+        handler({ exitCode, signal, intentional: this.killedIntentionally });
+      }
     });
+  }
+
+  /**
+   * Fires once, when the underlying process actually exits — whether that's
+   * the pane's own command finishing/crashing mid-session, or a subsequent
+   * `kill()` call. `intentional` tells the two apart: a caller (the tui
+   * layer) should only reclassify a session's status off exitCode/signal
+   * when intentional is false — a killed process typically exits via signal
+   * too, which would otherwise look identical to a real crash.
+   */
+  onExit(handler: (info: PtyExitInfo) => void): void {
+    this.exitHandlers.push(handler);
   }
 
   /** Raw output stream, for a renderer that wants to draw the live pane. */
@@ -87,6 +111,7 @@ export class ClaudePtyTransport implements Transport {
   }
 
   kill(): void {
+    this.killedIntentionally = true;
     this.ptyProcess.kill();
     this.connected = false;
   }

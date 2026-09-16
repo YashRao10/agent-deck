@@ -154,6 +154,7 @@ const PAGE = `<!doctype html>
   .session-card.idle { border-left-color: var(--blue); }
   .session-card.busy { border-left-color: var(--amber); }
   .session-card.offline { border-left-color: var(--text-faint); opacity: 0.7; }
+  .session-card.crashed { border-left-color: var(--red); }
   .session-card .row1 { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
   .session-card .name { font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
   .session-card .name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -170,6 +171,7 @@ const PAGE = `<!doctype html>
   .status-dot.idle, .status-dot.pending { background: var(--blue); }
   .status-dot.busy, .status-dot.in_progress { background: var(--amber); box-shadow: 0 0 0 0 rgba(227,179,65,0.5); animation: pulse-amber 1.6s infinite; }
   .status-dot.offline, .status-dot.failed { background: var(--text-faint); }
+  .status-dot.crashed { background: var(--red); }
   .status-dot.done { background: var(--green); }
   @keyframes pulse-amber {
     0% { box-shadow: 0 0 0 0 rgba(227, 179, 65, 0.55); }
@@ -180,7 +182,7 @@ const PAGE = `<!doctype html>
   .badge { padding: 0.16rem 0.6rem; border-radius: 999px; font-size: 0.72rem; white-space: nowrap; font-weight: 600; }
   .idle, .pending { background: var(--blue-bg); color: var(--blue); }
   .busy, .in_progress { background: var(--amber-bg); color: var(--amber); }
-  .offline, .failed { background: var(--red-bg); color: var(--red); }
+  .offline, .failed, .crashed { background: var(--red-bg); color: var(--red); }
   .done { background: var(--green-bg); color: var(--green); }
 
   .host-chip { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-dim); font-size: 0.8rem; }
@@ -367,7 +369,7 @@ function renderStats(sessions, tasks, messages) {
     {
       label: "Sessions",
       value: sessions.length,
-      breakdown: ["idle", "busy", "offline"].filter((s) => sessionCounts[s]).map((s) => \`<span class="chip \${s}">\${sessionCounts[s]} \${s}</span>\`).join(""),
+      breakdown: ["idle", "busy", "offline", "crashed"].filter((s) => sessionCounts[s]).map((s) => \`<span class="chip \${s}">\${sessionCounts[s]} \${s}</span>\`).join(""),
     },
     { label: "Active tasks", value: activeTasks, breakdown: "" },
     { label: "Tasks total", value: tasks.length, breakdown: "" },

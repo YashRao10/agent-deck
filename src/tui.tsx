@@ -69,6 +69,25 @@ export async function launchDeck(
     });
     socketServers.push(socketServer);
 
+    // A pane's underlying command can exit on its own at any time — the user
+    // quits `claude` inside the pane, or it crashes — independent of the
+    // outer `watch` process staying up. Update the registry the moment that
+    // happens instead of only learning about it (uniformly, as "offline")
+    // once the whole `watch` process is later killed. Skip intentional exits
+    // (our own kill() in cleanup()) — that path already marks "offline"
+    // itself, and a killed process typically exits via signal too, which
+    // would otherwise look identical to a real crash.
+    transport.onExit(({ exitCode, signal, intentional }) => {
+      if (intentional) return;
+      registry.markStatus(spec.id, exitCode === 0 && signal === undefined ? "offline" : "crashed");
+      registry.save().catch((err: unknown) => {
+        console.error(`Failed to persist status for "${spec.id}":`, err);
+      });
+      socketServer.close().catch((err: unknown) => {
+        console.error(`Failed to close socket for "${spec.id}":`, err);
+      });
+    });
+
     sources.push({ sessionId: spec.id, title: spec.title, transport });
   }
 
@@ -82,7 +101,9 @@ export async function launchDeck(
       registry.markStatus(source.sessionId, "offline");
     }
     await registry.save();
-    await Promise.all(socketServers.map((server) => server.close()));
+    await Promise.all(
+      socketServers.map((server) => server.close().catch(() => undefined)),
+    );
   };
 
   return { unmount, cleanup };

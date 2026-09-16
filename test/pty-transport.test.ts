@@ -11,15 +11,16 @@ const { ClaudePtyTransport } = await import("../src/pty-transport.js");
 
 function fakePty() {
   const dataHandlers: Array<(chunk: string) => void> = [];
-  const exitHandlers: Array<() => void> = [];
+  const exitHandlers: Array<(info: { exitCode: number; signal?: number }) => void> = [];
   return {
     write: vi.fn(),
     resize: vi.fn(),
     kill: vi.fn(),
     onData: (handler: (chunk: string) => void) => dataHandlers.push(handler),
-    onExit: (handler: () => void) => exitHandlers.push(handler),
+    onExit: (handler: (info: { exitCode: number; signal?: number }) => void) => exitHandlers.push(handler),
     emitData: (chunk: string) => dataHandlers.forEach((h) => h(chunk)),
-    emitExit: () => exitHandlers.forEach((h) => h()),
+    emitExit: (info: { exitCode: number; signal?: number } = { exitCode: 0 }) =>
+      exitHandlers.forEach((h) => h(info)),
   };
 }
 
@@ -85,5 +86,34 @@ describe("ClaudePtyTransport", () => {
     const transport = new ClaudePtyTransport({ sessionId: "worker-1" });
 
     expect(transport.isConnected("someone-else")).toBe(false);
+  });
+
+  it("reports an unintentional exit with its exit code and signal", () => {
+    const pty = fakePty();
+    spawnMock.mockReturnValue(pty);
+    const transport = new ClaudePtyTransport({ sessionId: "worker-1" });
+
+    const seen: Array<{ exitCode: number; signal?: number; intentional: boolean }> = [];
+    transport.onExit((info) => seen.push(info));
+
+    pty.emitExit({ exitCode: 1, signal: 11 });
+
+    expect(seen).toEqual([{ exitCode: 1, signal: 11, intentional: false }]);
+  });
+
+  it("marks an exit caused by kill() as intentional", () => {
+    const pty = fakePty();
+    spawnMock.mockReturnValue(pty);
+    const transport = new ClaudePtyTransport({ sessionId: "worker-1" });
+
+    const seen: Array<{ intentional: boolean }> = [];
+    transport.onExit((info) => seen.push(info));
+
+    transport.kill();
+    // node-pty invokes onExit asynchronously after a real kill() — simulate
+    // that same ordering here rather than assuming it's synchronous.
+    pty.emitExit({ exitCode: 0, signal: 15 });
+
+    expect(seen).toEqual([{ exitCode: 0, signal: 15, intentional: true }]);
   });
 });
