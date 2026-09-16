@@ -1,0 +1,265 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MACD — Multi-Agent Command Deck</title>
+<meta name="description" content="A terminal multiplexer and orchestration layer for running a fleet of Claude Code sessions as coordinated workers." />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' rx='4' fill='%23161b22'/%3E%3Crect x='3' y='3' width='4' height='4' rx='1' fill='%2358a6ff'/%3E%3Crect x='9' y='3' width='4' height='4' rx='1' fill='%233fb950'/%3E%3Crect x='3' y='9' width='10' height='4' rx='1' fill='%2330363d'/%3E%3C/svg%3E" />
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0a0d12;
+    --panel: #12161d;
+    --panel-border: #23282f;
+    --row-border: #1b1f26;
+    --text: #e6edf3;
+    --text-dim: #8b949e;
+    --text-faint: #545d68;
+    --accent: #58a6ff;
+    --accent-2: #a371f7;
+    --green: #3fb950;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background:
+      radial-gradient(1200px 500px at 15% -10%, rgba(88, 166, 255, 0.08), transparent),
+      radial-gradient(900px 400px at 100% 0%, rgba(163, 113, 247, 0.06), transparent),
+      var(--bg);
+    color: var(--text);
+    margin: 0;
+    -webkit-font-smoothing: antialiased;
+  }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+  a { color: var(--accent); }
+
+  .wrap { max-width: 920px; margin: 0 auto; padding: 0 16px; }
+
+  header.hero {
+    padding: 4.5rem 0 3.5rem;
+    text-align: center;
+    border-bottom: 1px solid var(--panel-border);
+  }
+  .brand-mark {
+    width: 56px; height: 56px; border-radius: 14px; margin: 0 auto 1.5rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: grid; place-items: center; font-size: 1.6rem; font-weight: 700; color: #05070a;
+    box-shadow: 0 8px 28px rgba(88, 166, 255, 0.3);
+  }
+  .eyebrow {
+    font-size: 0.78rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.14em; color: var(--text-dim); margin: 0 0 0.6rem;
+  }
+  h1.title {
+    font-size: clamp(2.4rem, 6vw, 3.6rem); font-weight: 800; margin: 0 0 1rem; letter-spacing: -0.03em;
+    background: linear-gradient(90deg, #f0f6fc, #9fb3c8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .tagline {
+    font-size: 1.1rem; color: var(--text-dim); max-width: 640px; margin: 0 auto 2rem;
+    line-height: 1.55;
+  }
+  .tagline strong { color: var(--text); font-weight: 600; }
+
+  .cta-row { display: flex; gap: 0.75rem; justify-content: center; flex-wrap: wrap; margin-bottom: 1.75rem; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.7rem 1.3rem; border-radius: 10px; font-size: 0.92rem; font-weight: 600;
+    text-decoration: none; border: 1px solid var(--panel-border); transition: transform 0.15s, border-color 0.15s;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent-2)); color: #05070a; border: none; }
+  .btn-ghost { color: var(--text); background: rgba(255,255,255,0.03); }
+  .btn-ghost:hover { border-color: #3a4048; }
+
+  .badges { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
+  .badges img { display: block; height: 20px; }
+
+  section { padding: 3.5rem 0; border-bottom: 1px solid var(--panel-border); }
+  section:last-of-type { border-bottom: none; }
+  h2 {
+    font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--text-dim); font-weight: 700; margin: 0 0 1.5rem; text-align: center;
+  }
+
+  .media-frame {
+    border: 1px solid var(--panel-border); border-radius: 14px; overflow: hidden;
+    background: var(--panel); box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+  .media-frame img { display: block; width: 100%; height: auto; }
+  .media-caption { text-align: center; color: var(--text-faint); font-size: 0.85rem; margin-top: 0.9rem; }
+  .media-caption code { color: var(--text-dim); }
+
+  .feature-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;
+  }
+  @media (max-width: 640px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-card {
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+  }
+  .feature-card .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); margin-bottom: 0.9rem; }
+  .feature-card h3 { font-size: 1rem; margin: 0 0 0.5rem; letter-spacing: -0.01em; }
+  .feature-card p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.55; margin: 0; }
+  .feature-card code { font-size: 0.85em; color: var(--accent); }
+
+  .diagram {
+    display: flex; flex-direction: column; align-items: center; gap: 0.5rem;
+    font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 0.82rem;
+    color: var(--text-dim); margin-top: 1.5rem;
+  }
+  .diagram .box {
+    border: 1px solid var(--panel-border); background: var(--panel); border-radius: 10px;
+    padding: 0.9rem 1.4rem; text-align: center; color: var(--text);
+  }
+  .diagram .box small { display: block; color: var(--text-faint); font-size: 0.78rem; margin-top: 0.25rem; }
+  .diagram .arrow { color: var(--text-faint); }
+
+  pre.install {
+    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px;
+    padding: 1.25rem 1.4rem; overflow-x: auto; font-size: 0.86rem; line-height: 1.7;
+    color: var(--text);
+  }
+  pre.install .cmt { color: var(--text-faint); }
+
+  footer { padding: 3rem 0 4rem; text-align: center; color: var(--text-faint); font-size: 0.85rem; }
+  footer a { color: var(--text-dim); }
+  footer .links { margin-top: 0.75rem; display: flex; gap: 1.25rem; justify-content: center; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <div class="brand-mark">&gt;_</div>
+    <p class="eyebrow">Multi-Agent Command Deck</p>
+    <h1 class="title">MACD</h1>
+    <p class="tagline">
+      A terminal multiplexer and orchestration layer for running a
+      <strong>fleet of Claude Code sessions</strong> as coordinated workers.
+      Split panes watch several agents at once, and a message/task router
+      underneath lets one session delegate work to others and track what
+      came back.
+    </p>
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://github.com/YashRao10/macd">View on GitHub</a>
+      <a class="btn btn-ghost" href="https://github.com/YashRao10/macd/releases/tag/v0.1.0">v0.1.0 Release</a>
+    </div>
+    <div class="badges">
+      <a href="https://github.com/YashRao10/macd/actions/workflows/ci.yml"><img src="https://github.com/YashRao10/macd/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+      <a href="https://github.com/YashRao10/macd/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" /></a>
+    </div>
+  </div>
+</header>
+
+<section>
+  <div class="wrap">
+    <h2>Live orchestration, not just a viewer</h2>
+    <div class="media-frame">
+      <img src="watch-demo.gif" alt="macd watch: two live panes, each running an independent session, with a message routed into each pane from a second terminal via macd send" />
+    </div>
+    <p class="media-caption">
+      <code class="mono">macd watch worker-1 worker-2</code> above, with a second terminal
+      running <code class="mono">macd send</code> to route a message into each live pane.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>What it does</h2>
+    <div class="feature-grid">
+      <div class="feature-card">
+        <div class="dot"></div>
+        <h3>Split-pane TUI</h3>
+        <p>Spawns real <code>claude</code> processes via <code>node-pty</code> and renders them
+          side-by-side with <code>ink</code> — watch a whole fleet at once, not one session at a time.</p>
+      </div>
+      <div class="feature-card">
+        <div class="dot"></div>
+        <h3>Cross-process messaging</h3>
+        <p><code>macd send</code> routes a message from any terminal into a live pane over a
+          real socket (a named pipe on Windows), so orchestration isn't confined to one process.</p>
+      </div>
+      <div class="feature-card">
+        <div class="dot"></div>
+        <h3>Task tracking</h3>
+        <p><code>macd assign</code> / <code>tasks</code> / <code>task-status</code> track work
+          through pending → in progress → done/failed, persisted across processes and sessions.</p>
+      </div>
+      <div class="feature-card">
+        <div class="dot"></div>
+        <h3>Live status, not just logs</h3>
+        <p>A spawned pane's crash is distinguished from a clean shutdown in real time — the
+          registry reflects what actually happened, not a uniform "offline."</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Read-only dashboard</h2>
+    <div class="media-frame">
+      <img src="dashboard-screenshot.jpg" alt="MACD dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline" />
+    </div>
+    <p class="media-caption">
+      <code class="mono">macd dashboard</code> — a small <code class="mono">node:http</code> server with no
+      new dependencies, reflecting the same on-disk state as the CLI. No send/assign/control endpoint —
+      the terminal UI and CLI stay the real control surfaces.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Architecture</h2>
+    <div class="diagram">
+      <div class="box">Orchestration core<small>registry · router · CLI — no native deps</small></div>
+      <div class="arrow">↕ implements <code class="mono">Transport</code></div>
+      <div class="box">PTY / multi-pane UI layer<small>node-pty · ink — verified on macOS and Windows</small></div>
+    </div>
+    <p class="media-caption" style="max-width: 560px; margin-left: auto; margin-right: auto;">
+      This project is its own dogfood case — built across two real machines, a Windows
+      session acting as orchestrator and a MacBook session acting as a worker, using exactly
+      the kind of cross-session delegation MACD is meant to formalize and visualize.
+    </p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <h2>Get started</h2>
+    <pre class="install"><span class="cmt"># clone and build</span>
+git clone https://github.com/YashRao10/macd.git
+cd macd
+npm install
+npm run build
+
+<span class="cmt"># spawn two live sessions, side by side</span>
+node dist/cli.js watch worker-1 worker-2
+
+<span class="cmt"># from a second terminal</span>
+node dist/cli.js send worker-1 "check CI"
+
+<span class="cmt"># read-only web view at http://127.0.0.1:4317</span>
+node dist/cli.js dashboard</pre>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>MIT licensed. Built by Yash Rao.</p>
+    <div class="links">
+      <a href="https://github.com/YashRao10/macd">GitHub</a>
+      <a href="https://github.com/YashRao10/macd/blob/master/README.md">README</a>
+      <a href="https://github.com/YashRao10/macd/blob/master/CONTRIBUTING.md">Contributing</a>
+      <a href="https://github.com/YashRao10/macd/releases">Releases</a>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
