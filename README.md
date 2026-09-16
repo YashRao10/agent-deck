@@ -13,6 +13,13 @@ machines: a Windows session acting as orchestrator ("main") and a MacBook
 session acting as a worker, using exactly the kind of cross-session
 delegation `agent-deck` is meant to formalize and visualize.
 
+![agent-deck watch: two live panes, each running an independent session, with a message routed into each pane from a second terminal via `agent-deck send`](docs/watch-demo.gif)
+
+`agent-deck watch worker-1 worker-2` above, with a second terminal running
+`agent-deck send worker-1 "..."` / `send worker-2 "..."` to route a message
+into each live pane — the actual orchestration surface. The dashboard below
+is the secondary, read-only visualization on top of the same state:
+
 ![agent-deck dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline](docs/dashboard-screenshot.jpg)
 
 ## Architecture

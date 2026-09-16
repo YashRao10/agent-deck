@@ -40,3 +40,23 @@ check means one of them failed.
 - No new dependencies for something a few lines of code can do — the
   dashboard server, for example, is deliberately built on `node:http` with
   no framework.
+
+## Regenerating the README demo GIF
+
+`docs/watch-demo.gif` is `scripts/record-demo.sh` recorded with
+[asciinema](https://asciinema.org) and rendered with
+[agg](https://github.com/asciinema/agg) (`brew install asciinema agg`):
+
+```bash
+npm run build
+asciinema rec --command "./scripts/record-demo.sh" --window-size 100x24 \
+  --idle-time-limit 2 --overwrite /tmp/watch-demo.cast
+agg --theme github-dark --idle-time-limit 1.5 --speed 1.3 \
+  /tmp/watch-demo.cast docs/watch-demo.gif
+```
+
+`--window-size` other than roughly 100x24 has produced blank frames out of
+`agg` in testing — if you change it, verify the output actually has content
+before committing. The committed GIF is also cropped to trim the mostly-empty
+bottom of the terminal (Pillow, frame by frame) — optional, but worth doing
+if you want a tighter file.
