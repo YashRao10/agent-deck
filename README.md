@@ -1,5 +1,8 @@
 # agent-deck
 
+[![CI](https://github.com/YashRao10/agent-deck/actions/workflows/ci.yml/badge.svg)](https://github.com/YashRao10/agent-deck/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+
 A terminal multiplexer and orchestration layer for running a **fleet of Claude
 Code sessions** as coordinated workers. Split panes watch several agents at
 once, and a message/task router underneath lets one "main" session delegate
