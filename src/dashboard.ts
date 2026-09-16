@@ -335,6 +335,8 @@ function avatar(seed, size) {
 const SPARKLINE_BUCKETS = 20;
 const SPARKLINE_BUCKET_MS = 60 * 1000;
 
+// Bucketing logic mirrored in src/dashboard-logic.ts's bucketMessages, which
+// has unit test coverage this inline copy can't get. Keep them in sync.
 function renderSparkline(messages) {
   const now = Date.now();
   const counts = new Array(SPARKLINE_BUCKETS).fill(0);
@@ -399,6 +401,8 @@ const seenTaskIds = new Set();
 const seenMessageIds = new Set();
 let enterDelay = 0;
 
+// Dedup logic mirrored in src/dashboard-logic.ts's shouldEnter, which has
+// unit test coverage this inline copy can't get. Keep them in sync.
 function markEnter(el, id, seen) {
   if (seen.has(id)) return;
   seen.add(id);
