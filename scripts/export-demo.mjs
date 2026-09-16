@@ -46,6 +46,13 @@ async function main() {
         "refreshAll();",
       )
       .replace(
+        "<body>",
+        '<body>\n<a href="../" style="position: fixed; top: 1rem; left: 1rem; z-index: 10; display: inline-flex; ' +
+          "align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: var(--text-dim); " +
+          "text-decoration: none; background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); " +
+          'border-radius: 999px; padding: 0.45rem 0.9rem;">&larr; Back to MACD</a>',
+      )
+      .replace(
         '<footer>MACD &middot; reflects <code>~/.macd/*.json</code> &middot; no send/assign/control endpoint exists here</footer>',
         '<footer>MACD &middot; this is a frozen, static export of the real dashboard\'s HTML/CSS/JS &mdash; ' +
           '<a href="https://github.com/YashRao10/macd#usage" style="color: var(--text-dim);">run `macd dashboard` yourself</a> ' +
