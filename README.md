@@ -1,25 +1,27 @@
 # agent-deck
 
 A terminal multiplexer and orchestration layer for running a **fleet of Claude
-Code sessions** as coordinated workers — split panes to watch several agents
-at once, plus a message/task router underneath so one "main" session can
-delegate work to others and track what came back.
+Code sessions** as coordinated workers. Split panes watch several agents at
+once, and a message/task router underneath lets one "main" session delegate
+work to others and track what came back.
 
-This project is its own dogfood case: it's being built across two real
-machines, a Windows session acting as orchestrator ("main") and a MacBook
+This project is its own dogfood case. It's being built across two real
+machines: a Windows session acting as orchestrator ("main") and a MacBook
 session acting as a worker, using exactly the kind of cross-session
 delegation `agent-deck` is meant to formalize and visualize.
+
+![agent-deck dashboard showing two sessions, one busy and one idle](docs/dashboard-screenshot.jpg)
 
 ## Architecture
 
 Two layers, deliberately decoupled by a `Transport` interface
 (`src/types.ts`):
 
-- **Orchestration core** (`src/registry.ts`, `src/router.ts`, `src/cli.ts`) —
-  session registry, message routing, task lifecycle. No native dependencies,
+- **Orchestration core** (`src/registry.ts`, `src/router.ts`, `src/cli.ts`).
+  Session registry, message routing, task lifecycle. No native dependencies,
   no terminal rendering. Works anywhere Node runs.
-- **Terminal/PTY layer** (`src/pty-transport.ts`, `src/ui/`, `src/tui.tsx`) —
-  spawns real `claude` processes via `node-pty` (`ClaudePtyTransport`),
+- **Terminal/PTY layer** (`src/pty-transport.ts`, `src/ui/`, `src/tui.tsx`).
+  Spawns real `claude` processes via `node-pty` (`ClaudePtyTransport`),
   renders them as split panes with `ink` (`Pane`/`App`), and implements
   `Transport` so the router can move messages in and out of each pane. This
   layer is platform-sensitive (native PTY bindings build far more easily on
@@ -39,30 +41,27 @@ Two layers, deliberately decoupled by a `Transport` interface
 
 ## Status
 
-Core session registry, message router, and the PTY/rendering layer are all
-implemented and tested (`npm test`, 15 tests passing). `agent-deck watch`
-spawns a real process per named session in a `node-pty` pseudo-terminal and
-renders them side by side with an `ink` split-pane UI (`ClaudePtyTransport`
-implements `Transport`, so the router can address a live pane the same way
-it addresses any other session).
+Session registry, message router, PTY/rendering layer, cross-process
+messaging, and a read-only dashboard are all implemented and tested
+(`npm test`, 27 tests passing).
 
-`watch` now registers each spawned pane in the same `SessionRegistry` store
-`register`/`list` use, and a new `agent-deck send <session-id> <message>`
-command lets a second terminal/process route a message into a live pane.
-Each spawned pane opens a small unix socket (`~/.agent-deck/sockets/<id>.sock`,
-a named pipe on Windows); `send` connects to it, and the pane's process runs
-the delivered text through its own `MessageRouter.sendMessage`, which writes
-it into the pane's `ClaudePtyTransport` as a line of input. Sessions are
-marked `offline` (not removed) when their `watch` process shuts down, so
-`list` still shows history.
-
-There's also a read-only `agent-deck dashboard` — a small `node:http` server
-(`src/dashboard.ts`, no new dependencies) that serves a live-updating HTML
-table of the registry, so the fleet can be shown in a browser without cloning
-the repo and running the CLI. It only reads `~/.agent-deck/sessions.json` on
-every request; it has no send/control endpoint. The terminal UI stays the one
-real control surface — the dashboard is a secondary visualization on top of
-it, not a second implementation of it.
+- `agent-deck watch <names...>` spawns a real process per named session in a
+  `node-pty` pseudo-terminal, renders them side by side with an `ink`
+  split-pane UI, and registers each one in the same `SessionRegistry` store
+  that `register`/`list` use. Sessions are marked `offline`, not removed,
+  when their `watch` process shuts down, so `list` still shows history.
+- `agent-deck send <session-id> <message>` routes a message into a live pane
+  from a second terminal or process. Each spawned pane opens a small unix
+  socket (a named pipe on Windows); `send` connects to it, and the pane's
+  process runs the delivered text through its own `MessageRouter.sendMessage`,
+  which writes it into the pane's `ClaudePtyTransport` as a line of input.
+- `agent-deck dashboard` is a small `node:http` server (no new dependencies)
+  that serves a live-updating HTML table of the registry, so the fleet can be
+  shown in a browser without cloning the repo and running the CLI. It only
+  reads `~/.agent-deck/sessions.json` on every request and has no
+  send/control endpoint. The terminal UI stays the one real control surface;
+  the dashboard is a secondary visualization on top of it, not a second
+  implementation of it.
 
 **Note on install:** `node-pty` ships a native `spawn-helper` binary that
 needs its executable bit set by its postinstall script. If your npm/CI
@@ -80,7 +79,7 @@ npm run build
 node dist/cli.js register "windows-main" --host windows
 node dist/cli.js list
 
-# PTY + multi-pane UI — spawns one `claude` process per name, side by side
+# PTY + multi-pane UI: spawns one `claude` process per name, side by side
 node dist/cli.js watch worker-1 worker-2
 # or point it at any command for local testing:
 node dist/cli.js watch a b --command bash
