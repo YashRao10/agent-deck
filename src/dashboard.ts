@@ -56,21 +56,47 @@ const PAGE = `<!doctype html>
     -webkit-font-smoothing: antialiased;
   }
   .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
-  header { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 2rem; gap: 1rem; flex-wrap: wrap; }
-  .brand { display: flex; align-items: center; gap: 0.7rem; }
+
+  .hero {
+    position: relative;
+    border-radius: 18px;
+    padding: 2.2rem 2.2rem 1.9rem;
+    margin-bottom: 1.75rem;
+    background:
+      radial-gradient(600px 240px at 0% 0%, rgba(88, 166, 255, 0.16), transparent),
+      radial-gradient(500px 220px at 100% 0%, rgba(163, 113, 247, 0.14), transparent),
+      linear-gradient(180deg, #12161d, #0e1218);
+    border: 1px solid var(--panel-border);
+    overflow: hidden;
+  }
+  .hero::before {
+    content: "";
+    position: absolute; inset: 0;
+    background-image: linear-gradient(rgba(255,255,255,0.035) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.035) 1px, transparent 1px);
+    background-size: 28px 28px;
+    mask-image: radial-gradient(ellipse 80% 80% at 30% 0%, black 10%, transparent 70%);
+    pointer-events: none;
+  }
+  header { position: relative; display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 0.85rem; }
   .brand-mark {
-    width: 34px; height: 34px; border-radius: 9px;
+    width: 46px; height: 46px; border-radius: 12px;
     background: linear-gradient(135deg, var(--accent), var(--accent-2));
-    display: grid; place-items: center; font-size: 1rem; font-weight: 700; color: #05070a;
-    box-shadow: 0 4px 14px rgba(88, 166, 255, 0.25);
+    display: grid; place-items: center; font-size: 1.3rem; font-weight: 700; color: #05070a;
+    box-shadow: 0 8px 24px rgba(88, 166, 255, 0.3);
     flex-shrink: 0;
   }
-  h1 { font-size: 1.25rem; font-weight: 650; margin: 0; letter-spacing: -0.01em; }
-  header .sub { color: var(--text-dim); font-size: 0.82rem; margin: 0.15rem 0 0; }
+  h1 {
+    font-size: 1.85rem; font-weight: 750; margin: 0; letter-spacing: -0.03em;
+    background: linear-gradient(90deg, #f0f6fc, #9fb3c8);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  header .sub { color: var(--text-dim); font-size: 0.92rem; margin: 0.3rem 0 0; }
+  header .sub strong { color: var(--text); font-weight: 600; }
   .live {
     display: inline-flex; align-items: center; gap: 0.45rem;
-    background: var(--panel); border: 1px solid var(--panel-border);
-    border-radius: 999px; padding: 0.4rem 0.85rem 0.4rem 0.65rem;
+    background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border);
+    border-radius: 999px; padding: 0.45rem 0.9rem 0.45rem 0.7rem;
     font-size: 0.78rem; color: var(--text-dim); white-space: nowrap;
   }
   .live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 0 rgba(63,185,80,0.6); animation: pulse 2s infinite; }
@@ -80,36 +106,58 @@ const PAGE = `<!doctype html>
     100% { box-shadow: 0 0 0 0 rgba(63, 185, 80, 0); }
   }
 
-  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin-bottom: 1.75rem; }
+  .stats { position: relative; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.9rem; margin-top: 1.75rem; }
   @media (max-width: 800px) { .stats { grid-template-columns: repeat(2, 1fr); } }
   .stat {
-    background: var(--panel); border: 1px solid var(--panel-border); border-radius: 12px;
-    padding: 0.95rem 1.1rem;
+    background: rgba(255,255,255,0.03); border: 1px solid var(--panel-border); border-radius: 12px;
+    padding: 0.95rem 1.1rem; transition: border-color 0.15s, transform 0.15s;
   }
-  .stat .value { font-size: 1.6rem; font-weight: 650; letter-spacing: -0.02em; }
-  .stat .label { color: var(--text-dim); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.2rem; }
-  .stat .breakdown { display: flex; gap: 0.5rem; margin-top: 0.55rem; flex-wrap: wrap; }
+  .stat:hover { border-color: #3a4048; transform: translateY(-1px); }
+  .stat .value { font-size: 1.75rem; font-weight: 700; letter-spacing: -0.02em; }
+  .stat .label { color: var(--text-dim); font-size: 0.74rem; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.25rem; }
+  .stat .breakdown { display: flex; gap: 0.5rem; margin-top: 0.6rem; flex-wrap: wrap; }
   .chip { font-size: 0.68rem; padding: 0.12rem 0.5rem; border-radius: 999px; }
 
-  .grid { display: grid; grid-template-columns: 1.35fr 1fr; gap: 1.25rem; align-items: start; }
-  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+  .grid { display: grid; grid-template-columns: 1.4fr 1fr; gap: 1.25rem; align-items: start; }
+  @media (max-width: 980px) { .grid { grid-template-columns: 1fr; } }
   section.card {
     background: var(--panel);
     border: 1px solid var(--panel-border);
-    border-radius: 12px;
-    padding: 1.3rem 1.4rem;
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
   }
   section.card + section.card { margin-top: 1.25rem; }
-  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.9rem; }
+  .card-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.1rem; }
+  .card-head .title { display: flex; align-items: center; gap: 0.55rem; }
+  .card-head .dot-icon { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
   h2 {
-    font-size: 0.78rem;
+    font-size: 0.82rem;
     text-transform: uppercase;
-    letter-spacing: 0.07em;
+    letter-spacing: 0.08em;
     color: var(--text-dim);
-    font-weight: 650;
+    font-weight: 700;
     margin: 0;
   }
-  .count-pill { font-size: 0.72rem; color: var(--text-faint); background: rgba(255,255,255,0.04); padding: 0.1rem 0.5rem; border-radius: 999px; }
+  .count-pill { font-size: 0.72rem; color: var(--text-faint); background: rgba(255,255,255,0.05); padding: 0.15rem 0.55rem; border-radius: 999px; }
+
+  .session-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 0.75rem; }
+  .session-card {
+    position: relative;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid var(--row-border);
+    border-left: 3px solid var(--text-faint);
+    border-radius: 10px;
+    padding: 0.85rem 0.95rem;
+    transition: border-color 0.15s, background 0.15s;
+  }
+  .session-card:hover { background: rgba(255,255,255,0.045); }
+  .session-card.idle { border-left-color: var(--blue); }
+  .session-card.busy { border-left-color: var(--amber); }
+  .session-card.offline { border-left-color: var(--text-faint); opacity: 0.7; }
+  .session-card .row1 { display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; }
+  .session-card .name { font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 0.45rem; min-width: 0; }
+  .session-card .name span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .session-card .row2 { display: flex; align-items: center; justify-content: space-between; margin-top: 0.65rem; }
 
   table { border-collapse: collapse; width: 100%; }
   th, td { text-align: left; padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--row-border); font-size: 0.86rem; vertical-align: middle; }
@@ -118,7 +166,6 @@ const PAGE = `<!doctype html>
   tbody tr { transition: background 0.12s; }
   tbody tr:hover { background: rgba(255,255,255,0.02); }
 
-  .name-cell { display: flex; align-items: center; gap: 0.55rem; }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
   .status-dot.idle, .status-dot.pending { background: var(--blue); }
   .status-dot.busy, .status-dot.in_progress { background: var(--amber); box-shadow: 0 0 0 0 rgba(227,179,65,0.5); animation: pulse-amber 1.6s infinite; }
@@ -130,28 +177,48 @@ const PAGE = `<!doctype html>
     100% { box-shadow: 0 0 0 0 rgba(227, 179, 65, 0); }
   }
 
-  .badge { padding: 0.16rem 0.6rem; border-radius: 999px; font-size: 0.72rem; white-space: nowrap; font-weight: 550; }
+  .badge { padding: 0.16rem 0.6rem; border-radius: 999px; font-size: 0.72rem; white-space: nowrap; font-weight: 600; }
   .idle, .pending { background: var(--blue-bg); color: var(--blue); }
   .busy, .in_progress { background: var(--amber-bg); color: var(--amber); }
   .offline, .failed { background: var(--red-bg); color: var(--red); }
   .done { background: var(--green-bg); color: var(--green); }
 
-  .host-chip { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-dim); font-size: 0.82rem; }
+  .host-chip { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--text-dim); font-size: 0.8rem; }
   .host-avatar {
     width: 18px; height: 18px; border-radius: 5px; flex-shrink: 0;
-    display: grid; place-items: center; font-size: 0.62rem; font-weight: 700; color: #05070a;
+    display: grid; place-items: center; font-size: 0.6rem; font-weight: 700; color: #05070a;
     text-transform: uppercase;
   }
 
-  .desc-cell { color: var(--text); max-width: 320px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .dim { color: var(--text-faint); font-size: 0.8rem; }
+  .board { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; }
+  @media (max-width: 700px) { .board { grid-template-columns: 1fr 1fr; } }
+  .lane { min-width: 0; }
+  .lane-head { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.6rem; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-dim); font-weight: 650; }
+  .lane-count { color: var(--text-faint); font-weight: 600; }
+  .task-card {
+    background: rgba(255,255,255,0.025); border: 1px solid var(--row-border); border-radius: 10px;
+    padding: 0.65rem 0.75rem; margin-bottom: 0.6rem; font-size: 0.82rem;
+  }
+  .task-card .desc { color: var(--text); overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .task-card .foot { display: flex; align-items: center; justify-content: space-between; margin-top: 0.5rem; gap: 0.4rem; }
+  .task-card .assignee { display: flex; align-items: center; gap: 0.35rem; color: var(--text-dim); font-size: 0.74rem; min-width: 0; }
+  .task-card .assignee span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .task-card .time { color: var(--text-faint); font-size: 0.7rem; white-space: nowrap; }
+  .lane-empty { color: var(--text-faint); font-size: 0.75rem; padding: 0.4rem 0.1rem; }
 
+  .dim { color: var(--text-faint); font-size: 0.8rem; }
   .empty { color: var(--text-faint); font-size: 0.85rem; padding: 0.75rem 0.25rem; text-align: center; }
 
-  .feed-item { display: flex; gap: 0.65rem; padding: 0.7rem 0; border-bottom: 1px solid var(--row-border); }
-  .feed-item:last-child { border-bottom: none; }
+  .timeline { position: relative; }
+  .feed-item { position: relative; display: flex; gap: 0.7rem; padding: 0 0 1.1rem; }
+  .feed-item:last-child { padding-bottom: 0; }
+  .feed-item::before {
+    content: ""; position: absolute; left: 13px; top: 30px; bottom: -2px; width: 1px;
+    background: var(--row-border);
+  }
+  .feed-item:last-child::before { display: none; }
   .feed-avatar {
-    width: 26px; height: 26px; border-radius: 7px; flex-shrink: 0; margin-top: 0.1rem;
+    width: 26px; height: 26px; border-radius: 8px; flex-shrink: 0; margin-top: 0.05rem; z-index: 1;
     display: grid; place-items: center; font-size: 0.68rem; font-weight: 700; color: #05070a;
     text-transform: uppercase;
   }
@@ -160,9 +227,9 @@ const PAGE = `<!doctype html>
   .feed-meta .arrow { color: var(--text-faint); }
   .feed-meta .time { margin-left: auto; color: var(--text-faint); font-size: 0.72rem; white-space: nowrap; }
   .feed-text {
-    margin-top: 0.3rem; font-size: 0.85rem; color: var(--text);
+    margin-top: 0.35rem; font-size: 0.85rem; color: var(--text);
     background: rgba(255,255,255,0.03); border: 1px solid var(--row-border);
-    border-radius: 8px; padding: 0.5rem 0.65rem; word-break: break-word;
+    border-radius: 9px; padding: 0.55rem 0.7rem; word-break: break-word;
   }
 
   footer { margin-top: 2.5rem; text-align: center; color: var(--text-faint); font-size: 0.75rem; }
@@ -170,41 +237,36 @@ const PAGE = `<!doctype html>
 </style>
 </head>
 <body>
-<header>
-  <div class="brand">
-    <div class="brand-mark">&gt;_</div>
-    <div>
-      <h1>agent-deck</h1>
-      <p class="sub">Read-only fleet view</p>
+<div class="hero">
+  <header>
+    <div class="brand">
+      <div class="brand-mark">&gt;_</div>
+      <div>
+        <h1>agent-deck</h1>
+        <p class="sub" id="tagline">Read-only fleet view</p>
+      </div>
     </div>
-  </div>
-  <span class="live"><span class="live-dot"></span>Live &middot; refreshes every 2s</span>
-</header>
-
-<div class="stats" id="stats"></div>
+    <span class="live"><span class="live-dot"></span>Live &middot; refreshes every 2s</span>
+  </header>
+  <div class="stats" id="stats"></div>
+</div>
 
 <div class="grid">
   <div>
     <section class="card">
-      <div class="card-head"><h2>Sessions</h2><span class="count-pill" id="sessions-count">0</span></div>
-      <table id="sessions">
-        <thead><tr><th>Name</th><th>Status</th><th>Host</th><th>Last seen</th></tr></thead>
-        <tbody></tbody>
-      </table>
+      <div class="card-head"><div class="title"><span class="dot-icon"></span><h2>Sessions</h2></div><span class="count-pill" id="sessions-count">0</span></div>
+      <div class="session-grid" id="sessions"></div>
       <p class="empty" id="sessions-empty" hidden>No sessions registered yet. Run <code class="mono">agent-deck register</code> or <code class="mono">agent-deck watch</code>.</p>
     </section>
     <section class="card">
-      <div class="card-head"><h2>Tasks</h2><span class="count-pill" id="tasks-count">0</span></div>
-      <table id="tasks">
-        <thead><tr><th>Assigned to</th><th>Status</th><th>Description</th><th>Updated</th></tr></thead>
-        <tbody></tbody>
-      </table>
+      <div class="card-head"><div class="title"><span class="dot-icon"></span><h2>Tasks</h2></div><span class="count-pill" id="tasks-count">0</span></div>
+      <div class="board" id="tasks"></div>
       <p class="empty" id="tasks-empty" hidden>No tasks tracked yet. Run <code class="mono">agent-deck assign</code>.</p>
     </section>
   </div>
   <section class="card">
-    <div class="card-head"><h2>Activity</h2><span class="count-pill" id="activity-count">0</span></div>
-    <div id="activity"></div>
+    <div class="card-head"><div class="title"><span class="dot-icon"></span><h2>Activity</h2></div><span class="count-pill" id="activity-count">0</span></div>
+    <div class="timeline" id="activity"></div>
     <p class="empty" id="activity-empty" hidden>No messages sent yet. Run <code class="mono">agent-deck send</code>.</p>
   </section>
 </div>
@@ -279,6 +341,15 @@ function renderStats(sessions, tasks, messages) {
   document.getElementById("stats").innerHTML = cards
     .map((c) => \`<div class="stat"><div class="value">\${c.value}</div><div class="label">\${c.label}</div>\${c.breakdown ? '<div class="breakdown">' + c.breakdown + "</div>" : ""}</div>\`)
     .join("");
+
+  const hosts = new Set(sessions.map((s) => s.host)).size;
+  const tagline = document.getElementById("tagline");
+  if (sessions.length === 0) {
+    tagline.innerHTML = "Read-only fleet view";
+  } else {
+    const busy = sessionCounts.busy || 0;
+    tagline.innerHTML = \`Watching <strong>\${sessions.length}</strong> session\${sessions.length === 1 ? "" : "s"} across <strong>\${hosts}</strong> host\${hosts === 1 ? "" : "s"}\${busy ? \`, <strong>\${busy}</strong> busy right now\` : ""}\`;
+  }
 }
 
 let latestSessions = [];
@@ -287,66 +358,103 @@ let latestMessages = [];
 
 async function refreshSessions() {
   latestSessions = await (await fetch("/api/sessions")).json();
-  const body = document.querySelector("#sessions tbody");
-  body.innerHTML = "";
+  const grid = document.getElementById("sessions");
+  grid.innerHTML = "";
   document.getElementById("sessions-empty").hidden = latestSessions.length > 0;
   document.getElementById("sessions-count").textContent = latestSessions.length;
   for (const s of latestSessions) {
-    const tr = document.createElement("tr");
+    const card = document.createElement("div");
+    card.className = "session-card " + s.status;
 
-    const name = document.createElement("td");
-    const nameCell = document.createElement("div");
-    nameCell.className = "name-cell";
-    nameCell.appendChild(statusDot(s.status));
+    const row1 = document.createElement("div");
+    row1.className = "row1";
+    const name = document.createElement("div");
+    name.className = "name";
+    name.appendChild(statusDot(s.status));
     const nameText = document.createElement("span");
     nameText.textContent = s.name;
-    nameCell.appendChild(nameText);
-    name.appendChild(nameCell);
+    name.appendChild(nameText);
+    row1.appendChild(name);
+    row1.appendChild(badge(s.status));
 
-    const status = document.createElement("td");
-    status.appendChild(badge(s.status));
-
-    const host = document.createElement("td");
+    const row2 = document.createElement("div");
+    row2.className = "row2";
     const hostChip = document.createElement("span");
     hostChip.className = "host-chip";
     hostChip.appendChild(avatar(s.host, "small"));
     const hostText = document.createElement("span");
     hostText.textContent = s.host;
     hostChip.appendChild(hostText);
-    host.appendChild(hostChip);
-
-    const lastSeen = document.createElement("td");
+    const lastSeen = document.createElement("span");
     lastSeen.className = "dim";
     lastSeen.textContent = relativeTime(s.lastSeen);
     lastSeen.title = new Date(s.lastSeen).toLocaleString();
+    row2.append(hostChip, lastSeen);
 
-    tr.append(name, status, host, lastSeen);
-    body.appendChild(tr);
+    card.append(row1, row2);
+    grid.appendChild(card);
   }
 }
 
+const TASK_LANES = [
+  { key: "pending", label: "Pending" },
+  { key: "in_progress", label: "In progress" },
+  { key: "done", label: "Done" },
+  { key: "failed", label: "Failed" },
+];
+
 async function refreshTasks() {
   latestTasks = await (await fetch("/api/tasks")).json();
-  const body = document.querySelector("#tasks tbody");
-  body.innerHTML = "";
+  const board = document.getElementById("tasks");
+  board.innerHTML = "";
   document.getElementById("tasks-empty").hidden = latestTasks.length > 0;
   document.getElementById("tasks-count").textContent = latestTasks.length;
-  for (const t of latestTasks) {
-    const tr = document.createElement("tr");
-    const assignedTo = document.createElement("td");
-    assignedTo.textContent = t.assignedTo;
-    const status = document.createElement("td");
-    status.appendChild(badge(t.status));
-    const description = document.createElement("td");
-    description.className = "desc-cell";
-    description.textContent = t.description;
-    description.title = t.description;
-    const updated = document.createElement("td");
-    updated.className = "dim";
-    updated.textContent = relativeTime(t.updatedAt);
-    updated.title = new Date(t.updatedAt).toLocaleString();
-    tr.append(assignedTo, status, description, updated);
-    body.appendChild(tr);
+
+  for (const lane of TASK_LANES) {
+    const laneTasks = latestTasks.filter((t) => t.status === lane.key);
+    const laneEl = document.createElement("div");
+    laneEl.className = "lane";
+
+    const head = document.createElement("div");
+    head.className = "lane-head";
+    head.innerHTML = \`\${lane.label} <span class="lane-count">\${laneTasks.length}</span>\`;
+    laneEl.appendChild(head);
+
+    if (laneTasks.length === 0) {
+      const empty = document.createElement("div");
+      empty.className = "lane-empty";
+      empty.textContent = "\\u2014";
+      laneEl.appendChild(empty);
+    }
+
+    for (const t of laneTasks) {
+      const card = document.createElement("div");
+      card.className = "task-card";
+
+      const desc = document.createElement("div");
+      desc.className = "desc";
+      desc.textContent = t.description;
+      desc.title = t.description;
+
+      const foot = document.createElement("div");
+      foot.className = "foot";
+      const assignee = document.createElement("div");
+      assignee.className = "assignee";
+      assignee.appendChild(avatar(t.assignedTo, "small"));
+      const assigneeText = document.createElement("span");
+      assigneeText.textContent = t.assignedTo;
+      assignee.appendChild(assigneeText);
+      const time = document.createElement("span");
+      time.className = "time";
+      time.textContent = relativeTime(t.updatedAt);
+      time.title = new Date(t.updatedAt).toLocaleString();
+      foot.append(assignee, time);
+
+      card.append(desc, foot);
+      laneEl.appendChild(card);
+    }
+
+    board.appendChild(laneEl);
   }
 }
 
