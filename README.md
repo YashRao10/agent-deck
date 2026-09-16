@@ -10,6 +10,8 @@ machines: a Windows session acting as orchestrator ("main") and a MacBook
 session acting as a worker, using exactly the kind of cross-session
 delegation `agent-deck` is meant to formalize and visualize.
 
+![agent-deck dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline](docs/dashboard-screenshot.jpg)
+
 ## Architecture
 
 Two layers, deliberately decoupled by a `Transport` interface
@@ -68,12 +70,13 @@ There's also a read-only `agent-deck dashboard` — a small `node:http` server
 (`src/dashboard.ts`, no new dependencies) with a card-based layout: session
 cards with a live status indicator and host chip, a 4-lane Kanban board
 (Pending/In Progress/Done/Failed) for tasks, and a timeline-style activity
-feed of recent messages. A dynamic hero tagline summarizes the fleet at a
-glance (e.g. "Watching 4 sessions across 3 hosts, 2 busy right now"). It
-only reads the JSON stores above on every request; it has no
-send/assign/control endpoint. The terminal UI and the CLI's `assign`/`send`
-commands stay the real control surfaces — the dashboard is a secondary
-visualization on top of them, not a second implementation of them.
+feed of recent messages with a message-volume sparkline above it. A dynamic
+hero tagline summarizes the fleet at a glance (e.g. "Watching 4 sessions
+across 3 hosts, 2 busy right now"). It only reads the JSON stores above on
+every request; it has no send/assign/control endpoint. The terminal UI and
+the CLI's `assign`/`send` commands stay the real control surfaces — the
+dashboard is a secondary visualization on top of them, not a second
+implementation of them.
 
 **Note on install:** `node-pty` ships a native `spawn-helper` binary that
 needs its executable bit set by its postinstall script. If your npm/CI

@@ -234,6 +234,16 @@ const PAGE = `<!doctype html>
 
   footer { margin-top: 2.5rem; text-align: center; color: var(--text-faint); font-size: 0.75rem; }
   footer code { color: var(--text-dim); }
+
+  @keyframes rise-in {
+    from { opacity: 0; transform: translateY(6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .session-card, .task-card, .feed-item { animation: rise-in 0.35s ease-out both; }
+
+  .sparkline { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
+  .sparkline .bar { width: 5px; border-radius: 2px 2px 0 0; background: var(--accent); opacity: 0.35; min-height: 2px; transition: opacity 0.15s; }
+  .sparkline .bar.hot { opacity: 0.9; }
 </style>
 </head>
 <body>
@@ -266,6 +276,7 @@ const PAGE = `<!doctype html>
   </div>
   <section class="card">
     <div class="card-head"><div class="title"><span class="dot-icon"></span><h2>Activity</h2></div><span class="count-pill" id="activity-count">0</span></div>
+    <div class="sparkline" id="sparkline" style="margin-bottom: 1rem;"></div>
     <div class="timeline" id="activity"></div>
     <p class="empty" id="activity-empty" hidden>No messages sent yet. Run <code class="mono">agent-deck send</code>.</p>
   </section>
@@ -321,6 +332,29 @@ function avatar(seed, size) {
   return el;
 }
 
+const SPARKLINE_BUCKETS = 20;
+const SPARKLINE_BUCKET_MS = 60 * 1000;
+
+function renderSparkline(messages) {
+  const now = Date.now();
+  const counts = new Array(SPARKLINE_BUCKETS).fill(0);
+  for (const m of messages) {
+    const age = now - new Date(m.sentAt).getTime();
+    const bucket = SPARKLINE_BUCKETS - 1 - Math.floor(age / SPARKLINE_BUCKET_MS);
+    if (bucket >= 0 && bucket < SPARKLINE_BUCKETS) counts[bucket]++;
+  }
+  const max = Math.max(1, ...counts);
+  const el = document.getElementById("sparkline");
+  el.innerHTML = "";
+  el.title = "Messages per minute, last " + SPARKLINE_BUCKETS + " minutes";
+  for (const count of counts) {
+    const bar = document.createElement("div");
+    bar.className = "bar" + (count > 0 ? " hot" : "");
+    bar.style.height = Math.max(2, Math.round((count / max) * 26)) + "px";
+    el.appendChild(bar);
+  }
+}
+
 function renderStats(sessions, tasks, messages) {
   const byStatus = (list, key) => list.reduce((acc, item) => { acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
   const sessionCounts = byStatus(sessions, "status");
@@ -362,9 +396,10 @@ async function refreshSessions() {
   grid.innerHTML = "";
   document.getElementById("sessions-empty").hidden = latestSessions.length > 0;
   document.getElementById("sessions-count").textContent = latestSessions.length;
-  for (const s of latestSessions) {
+  latestSessions.forEach((s, idx) => {
     const card = document.createElement("div");
     card.className = "session-card " + s.status;
+    card.style.animationDelay = idx * 40 + "ms";
 
     const row1 = document.createElement("div");
     row1.className = "row1";
@@ -393,7 +428,7 @@ async function refreshSessions() {
 
     card.append(row1, row2);
     grid.appendChild(card);
-  }
+  });
 }
 
 const TASK_LANES = [
@@ -464,9 +499,10 @@ async function refreshActivity() {
   feed.innerHTML = "";
   document.getElementById("activity-empty").hidden = latestMessages.length > 0;
   document.getElementById("activity-count").textContent = latestMessages.length;
-  for (const m of latestMessages.slice(0, 20)) {
+  latestMessages.slice(0, 20).forEach((m, idx) => {
     const item = document.createElement("div");
     item.className = "feed-item";
+    item.style.animationDelay = idx * 40 + "ms";
     item.appendChild(avatar(m.from, "large"));
 
     const wrap = document.createElement("div");
@@ -494,12 +530,13 @@ async function refreshActivity() {
     wrap.append(meta, text);
     item.appendChild(wrap);
     feed.appendChild(item);
-  }
+  });
 }
 
 async function refreshAll() {
   await Promise.all([refreshSessions(), refreshTasks(), refreshActivity()]);
   renderStats(latestSessions, latestTasks, latestMessages);
+  renderSparkline(latestMessages);
 }
 
 refreshAll();
