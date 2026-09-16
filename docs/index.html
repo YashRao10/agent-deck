@@ -88,7 +88,9 @@
   .media-frame {
     border: 1px solid var(--panel-border); border-radius: 14px; overflow: hidden;
     background: var(--panel); box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    transition: border-color 0.15s, transform 0.15s;
   }
+  a.media-frame:hover { border-color: var(--accent); transform: translateY(-2px); }
   .media-frame img { display: block; width: 100%; height: auto; }
   .media-caption { text-align: center; color: var(--text-faint); font-size: 0.85rem; margin-top: 0.9rem; }
   .media-caption code { color: var(--text-dim); }
@@ -145,7 +147,8 @@
       came back.
     </p>
     <div class="cta-row">
-      <a class="btn btn-primary" href="https://github.com/YashRao10/macd">View on GitHub</a>
+      <a class="btn btn-primary" href="demo/">Open the Dashboard</a>
+      <a class="btn btn-ghost" href="https://github.com/YashRao10/macd">View on GitHub</a>
       <a class="btn btn-ghost" href="https://github.com/YashRao10/macd/releases/tag/v0.1.0">v0.1.0 Release</a>
     </div>
     <div class="badges">
@@ -158,13 +161,14 @@
 <section>
   <div class="wrap-wide">
     <h2>Read-only dashboard</h2>
-    <div class="media-frame">
+    <a href="demo/" class="media-frame" style="display: block;">
       <img src="dashboard-screenshot.jpg" alt="MACD dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline" />
-    </div>
+    </a>
     <p class="media-caption">
       <code class="mono">macd dashboard</code> — a small <code class="mono">node:http</code> server with no
       new dependencies, reflecting the same on-disk state as the CLI. No send/assign/control endpoint —
-      the terminal UI and CLI stay the real control surfaces.
+      the terminal UI and CLI stay the real control surfaces.<br />
+      <a href="demo/">Open the live dashboard UI &rarr;</a> (a frozen, seeded snapshot — same real code, static data)
     </p>
   </div>
 </section>

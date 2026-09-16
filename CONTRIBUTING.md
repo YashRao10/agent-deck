@@ -61,3 +61,20 @@ agg --theme github-dark --idle-time-limit 1.5 --speed 1.3 \
 before committing. The committed GIF is also cropped to trim the mostly-empty
 bottom of the terminal (Pillow, frame by frame) — optional, but worth doing
 if you want a tighter file.
+
+## Regenerating the static dashboard demo (docs/demo/)
+
+The landing page links to a "live" dashboard demo — `docs/demo/index.html`,
+the real dashboard's actual HTML/CSS/JS, fetched from a real running
+`macd dashboard` server so it can't drift from what the real thing renders,
+then rewritten to fetch static `sessions.json`/`tasks.json`/`messages.json`
+instead of the live `/api/*` routes. No server, no hosting account — but the
+data is frozen at whenever this last ran, not actually live.
+
+```bash
+npm run build
+node scripts/export-demo.mjs
+```
+
+Re-run and commit the result whenever you want the snapshot's timestamps
+("2m ago", etc.) to look fresh again.
