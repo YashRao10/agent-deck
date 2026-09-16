@@ -1,5 +1,5 @@
 import { SessionRegistry } from "./registry.js";
-import { TaskStore } from "./task-store.js";
+import { TaskStore, UNASSIGNED } from "./task-store.js";
 import { MessageLog } from "./message-log.js";
 import type { AgentSession, Task } from "./types.js";
 
@@ -34,6 +34,8 @@ const SEED_TASKS: Array<{ assignedTo: string; description: string; status: Task[
   { assignedTo: "release-worker", description: "Verify node-pty postinstall on a clean CI image", status: "failed", hoursAgo: 0.75 },
   { assignedTo: "orchestrator", description: "Review dashboard-polish-and-screenshot PR", status: "pending", hoursAgo: 0.3 },
   { assignedTo: "docs-worker", description: "Draft LinkedIn project blurb", status: "pending", hoursAgo: 0.1 },
+  { assignedTo: UNASSIGNED, description: "Triage the flaky test in test-runner's suite", status: "pending", hoursAgo: 0.6 },
+  { assignedTo: UNASSIGNED, description: "Write a CHANGELOG entry for v0.2.0", status: "pending", hoursAgo: 0.2 },
 ];
 
 const SEED_MESSAGES: Array<{ from: string; to: string; body: string; minutesAgo: number }> = [

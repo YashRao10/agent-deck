@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { bucketMessages, shouldEnter } from "../src/dashboard-logic.js";
+import { bucketMessages, countPooledTasks, shouldEnter } from "../src/dashboard-logic.js";
+import { UNASSIGNED } from "../src/task-store.js";
 
 describe("bucketMessages", () => {
   const NOW = 1_000_000;
@@ -68,5 +69,30 @@ describe("shouldEnter", () => {
     expect(shouldEnter(seen, "a")).toBe(true);
     expect(shouldEnter(seen, "b")).toBe(true);
     expect(shouldEnter(seen, "a")).toBe(false);
+  });
+});
+
+describe("countPooledTasks", () => {
+  it("counts only pending tasks assigned to the unclaimed pool", () => {
+    const count = countPooledTasks([
+      { status: "pending", assignedTo: UNASSIGNED },
+      { status: "pending", assignedTo: UNASSIGNED },
+      { status: "pending", assignedTo: "worker-1" },
+      { status: "in_progress", assignedTo: UNASSIGNED },
+      { status: "done", assignedTo: UNASSIGNED },
+    ]);
+    expect(count).toBe(2);
+  });
+
+  it("returns 0 for an empty task list", () => {
+    expect(countPooledTasks([])).toBe(0);
+  });
+
+  it("returns 0 when nothing is pooled", () => {
+    const count = countPooledTasks([
+      { status: "pending", assignedTo: "worker-1" },
+      { status: "done", assignedTo: "worker-2" },
+    ]);
+    expect(count).toBe(0);
   });
 });
