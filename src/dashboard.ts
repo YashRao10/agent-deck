@@ -239,7 +239,7 @@ const PAGE = `<!doctype html>
     from { opacity: 0; transform: translateY(6px); }
     to { opacity: 1; transform: translateY(0); }
   }
-  .session-card, .task-card, .feed-item { animation: rise-in 0.35s ease-out both; }
+  .session-card.enter, .task-card.enter, .feed-item.enter { animation: rise-in 0.35s ease-out both; }
 
   .sparkline { display: flex; align-items: flex-end; gap: 3px; height: 28px; }
   .sparkline .bar { width: 5px; border-radius: 2px 2px 0 0; background: var(--accent); opacity: 0.35; min-height: 2px; transition: opacity 0.15s; }
@@ -390,16 +390,33 @@ let latestSessions = [];
 let latestTasks = [];
 let latestMessages = [];
 
+// Every panel does a full rebuild on each 2s poll. Animating unconditionally
+// would re-trigger "rise-in" on every item every cycle, which reads as
+// flicker rather than polish once real status changes start happening. Only
+// animate an id the first time it's seen; silent update after that.
+const seenSessionIds = new Set();
+const seenTaskIds = new Set();
+const seenMessageIds = new Set();
+let enterDelay = 0;
+
+function markEnter(el, id, seen) {
+  if (seen.has(id)) return;
+  seen.add(id);
+  el.classList.add("enter");
+  el.style.animationDelay = enterDelay + "ms";
+  enterDelay += 40;
+}
+
 async function refreshSessions() {
   latestSessions = await (await fetch("/api/sessions")).json();
   const grid = document.getElementById("sessions");
   grid.innerHTML = "";
   document.getElementById("sessions-empty").hidden = latestSessions.length > 0;
   document.getElementById("sessions-count").textContent = latestSessions.length;
-  latestSessions.forEach((s, idx) => {
+  latestSessions.forEach((s) => {
     const card = document.createElement("div");
     card.className = "session-card " + s.status;
-    card.style.animationDelay = idx * 40 + "ms";
+    markEnter(card, s.id, seenSessionIds);
 
     const row1 = document.createElement("div");
     row1.className = "row1";
@@ -465,6 +482,7 @@ async function refreshTasks() {
     for (const t of laneTasks) {
       const card = document.createElement("div");
       card.className = "task-card";
+      markEnter(card, t.id, seenTaskIds);
 
       const desc = document.createElement("div");
       desc.className = "desc";
@@ -499,10 +517,10 @@ async function refreshActivity() {
   feed.innerHTML = "";
   document.getElementById("activity-empty").hidden = latestMessages.length > 0;
   document.getElementById("activity-count").textContent = latestMessages.length;
-  latestMessages.slice(0, 20).forEach((m, idx) => {
+  latestMessages.slice(0, 20).forEach((m) => {
     const item = document.createElement("div");
     item.className = "feed-item";
-    item.style.animationDelay = idx * 40 + "ms";
+    markEnter(item, m.id, seenMessageIds);
     item.appendChild(avatar(m.from, "large"));
 
     const wrap = document.createElement("div");
@@ -534,6 +552,7 @@ async function refreshActivity() {
 }
 
 async function refreshAll() {
+  enterDelay = 0;
   await Promise.all([refreshSessions(), refreshTasks(), refreshActivity()]);
   renderStats(latestSessions, latestTasks, latestMessages);
   renderSparkline(latestMessages);
