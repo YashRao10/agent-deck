@@ -78,4 +78,17 @@ describe("dashboard server", () => {
     const res = await fetch(`${server.url}/api/send`, { method: "POST" });
     expect(res.status).toBe(404);
   });
+
+  it("ignores a query string on routed paths", async () => {
+    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    server = await startDashboardServer(join(dir, "sessions.json"));
+
+    const page = await fetch(`${server.url}/?foo=bar`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get("content-type")).toContain("text/html");
+
+    const api = await fetch(`${server.url}/api/sessions?cachebust=123`);
+    expect(api.status).toBe(200);
+    expect(api.headers.get("content-type")).toContain("application/json");
+  });
 });
