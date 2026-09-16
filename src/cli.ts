@@ -6,6 +6,7 @@ import { randomUUID } from "node:crypto";
 import { SessionRegistry } from "./registry.js";
 import { launchDeck } from "./tui.js";
 import { sendToSessionSocket } from "./ipc.js";
+import { startDashboardServer } from "./dashboard.js";
 
 const storePath = join(homedir(), ".agent-deck", "sessions.json");
 
@@ -91,6 +92,20 @@ program
       console.error(`Failed to reach "${session.name}" (${session.id}):`, (err as Error).message);
       process.exitCode = 1;
     }
+  });
+
+program
+  .command("dashboard")
+  .description("Serve a read-only web view of known agent sessions (no send/control capability)")
+  .option("--port <port>", "port to listen on", "4317")
+  .action(async (opts: { port: string }) => {
+    const server = await startDashboardServer(storePath, Number(opts.port));
+    console.log(`agent-deck dashboard running at ${server.url}`);
+    const shutdown = () => {
+      server.close().finally(() => process.exit(0));
+    };
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
   });
 
 program.parseAsync(process.argv);
