@@ -3,6 +3,9 @@ import { dirname } from "node:path";
 import { randomUUID } from "node:crypto";
 import type { Task } from "./types.js";
 
+/** Sentinel `assignedTo` for a task in the shared pool, not yet claimed by a specific session. */
+export const UNASSIGNED = "unassigned";
+
 /**
  * Persisted, cross-process task tracking — separate from MessageRouter's
  * in-memory task map, which is a transient view for a single process (a
@@ -40,6 +43,27 @@ export class TaskStore {
       updatedAt: now,
     };
     this.tasks.push(task);
+    return task;
+  }
+
+  /**
+   * Pull-based dispatch: claims the oldest pending task that's either
+   * already assigned to `sessionId` or sitting unclaimed in the shared
+   * pool (`macd queue`), reassigning it to `sessionId` and marking it
+   * in_progress. Lets a worker ask "what's next for me" instead of
+   * requiring an orchestrator to push every assignment individually.
+   * Not concurrency-safe against two sessions racing the same on-disk
+   * store at once — fine for a handful of CLI-driven workers, not a
+   * distributed queue.
+   */
+  claimNext(sessionId: string): Task | undefined {
+    const task = this.tasks.find(
+      (t) => t.status === "pending" && (t.assignedTo === sessionId || t.assignedTo === UNASSIGNED),
+    );
+    if (!task) return undefined;
+    task.assignedTo = sessionId;
+    task.status = "in_progress";
+    task.updatedAt = new Date().toISOString();
     return task;
   }
 
