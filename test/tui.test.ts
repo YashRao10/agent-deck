@@ -20,13 +20,14 @@ const { sendToSessionSocket, socketPathFor } = await import("../src/ipc.js");
 
 function fakePty() {
   const dataHandlers: Array<(chunk: string) => void> = [];
-  const exitHandlers: Array<() => void> = [];
+  const exitHandlers: Array<(info: { exitCode: number; signal?: number }) => void> = [];
   return {
     write: vi.fn(),
     resize: vi.fn(),
     kill: vi.fn(),
     onData: (handler: (chunk: string) => void) => dataHandlers.push(handler),
-    onExit: (handler: () => void) => exitHandlers.push(handler),
+    onExit: (handler: (info: { exitCode: number; signal?: number }) => void) => exitHandlers.push(handler),
+    emitExit: (info: { exitCode: number; signal?: number }) => exitHandlers.forEach((h) => h(info)),
   };
 }
 
@@ -74,6 +75,68 @@ describe("launchDeck", () => {
     expect(registry.get(sessionId)?.status).toBe("offline");
 
     await expect(sendToSessionSocket(socketPathFor(sessionId), "hi")).rejects.toThrow();
+  });
+
+  it("marks a session crashed the moment its pane exits unexpectedly, without waiting for cleanup", async () => {
+    dir = await mkdtemp(join(tmpdir(), "agent-deck-tui-"));
+    const storePath = join(dir, "sessions.json");
+    const pty = fakePty();
+    spawnMock.mockReturnValue(pty);
+
+    const sessionId = `worker-${randomUUID()}`;
+    const { cleanup } = await launchDeck([{ id: sessionId, title: "worker" }], { storePath });
+
+    pty.emitExit({ exitCode: 1, signal: 11 });
+
+    const registry = new SessionRegistry(storePath);
+    await vi.waitFor(async () => {
+      await registry.load();
+      expect(registry.get(sessionId)?.status).toBe("crashed");
+    });
+
+    // Its socket should already be torn down too, not left dangling until cleanup().
+    await expect(sendToSessionSocket(socketPathFor(sessionId), "hi")).rejects.toThrow();
+
+    await cleanup();
+  });
+
+  it("marks a cleanly-exited pane offline, not crashed", async () => {
+    dir = await mkdtemp(join(tmpdir(), "agent-deck-tui-"));
+    const storePath = join(dir, "sessions.json");
+    const pty = fakePty();
+    spawnMock.mockReturnValue(pty);
+
+    const sessionId = `worker-${randomUUID()}`;
+    const { cleanup } = await launchDeck([{ id: sessionId, title: "worker" }], { storePath });
+
+    pty.emitExit({ exitCode: 0 });
+
+    const registry = new SessionRegistry(storePath);
+    await vi.waitFor(async () => {
+      await registry.load();
+      expect(registry.get(sessionId)?.status).toBe("offline");
+    });
+
+    await cleanup();
+  });
+
+  it("does not reclassify a session as crashed when cleanup()'s own kill() triggers the exit", async () => {
+    dir = await mkdtemp(join(tmpdir(), "agent-deck-tui-"));
+    const storePath = join(dir, "sessions.json");
+    const pty = fakePty();
+    spawnMock.mockReturnValue(pty);
+
+    const sessionId = `worker-${randomUUID()}`;
+    const { cleanup } = await launchDeck([{ id: sessionId, title: "worker" }], { storePath });
+
+    // cleanup() calls transport.kill(), then (as node-pty would, asynchronously)
+    // the underlying process reports its own exit — typically via signal.
+    await cleanup();
+    pty.emitExit({ exitCode: 0, signal: 15 });
+
+    const registry = new SessionRegistry(storePath);
+    await registry.load();
+    expect(registry.get(sessionId)?.status).toBe("offline");
   });
 
   it("delivers a message sent to the pane's socket into the PTY as input", async () => {
