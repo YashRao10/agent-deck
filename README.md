@@ -56,7 +56,7 @@ Two layers, deliberately decoupled by a `Transport` interface
 
 Session registry, message router, PTY/rendering layer, cross-process
 messaging, task tracking, and a read-only dashboard are all implemented and
-tested (`npm test`, 53 tests passing).
+tested (`npm test`, 59 tests passing).
 
 `macd seed` (`src/seed.ts`) overwrites the sessions/tasks/messages
 stores with a fixed demo fleet, timestamped relative to `now`. It exists so
@@ -93,6 +93,16 @@ transient view for a single process (a `watch` pane's own router); the
 `TaskStore` is what the CLI and dashboard read and write across processes.
 Every `send` also appends to a capped `MessageLog` (`~/.macd/messages.json`,
 last 200 entries) so there's a record of what's actually been said.
+
+`assign` is push-based — an orchestrator decides who does what. `macd queue
+<description>` is the pull-based complement: it drops a task into a shared,
+unclaimed pool instead of naming a session, and `macd next <session-id>`
+lets a worker ask "what's next for me" — it claims the oldest pending task
+that's either already assigned to it or sitting in that pool, reassigns it
+if it came from the pool, and marks it `in_progress`. A worker session can
+loop on `next` instead of an orchestrator individually pushing every
+assignment; both models share the same `TaskStore`, so a dashboard or
+`tasks` listing doesn't care which one produced a given task.
 
 There's also a read-only `macd dashboard` — a small `node:http` server
 (`src/dashboard.ts`, no new dependencies) with a card-based layout: session
@@ -134,6 +144,10 @@ node dist/cli.js send worker-1 "check CI"
 node dist/cli.js assign worker-1 "review the auth PR"
 node dist/cli.js tasks
 node dist/cli.js task-status <task-id> in_progress
+
+# or let workers pull their own work from a shared pool instead
+node dist/cli.js queue "triage the flaky test"
+node dist/cli.js next worker-1
 
 # populate a demo fleet (sessions, tasks, message history) so the dashboard
 # has something to show on a fresh clone or before a screenshot — overwrites

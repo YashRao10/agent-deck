@@ -7,7 +7,7 @@ import { SessionRegistry } from "./registry.js";
 import { launchDeck } from "./tui.js";
 import { sendToSessionSocket } from "./ipc.js";
 import { startDashboardServer } from "./dashboard.js";
-import { TaskStore } from "./task-store.js";
+import { TaskStore, UNASSIGNED } from "./task-store.js";
 import { MessageLog } from "./message-log.js";
 import { seedDemoData } from "./seed.js";
 import type { Task } from "./types.js";
@@ -114,6 +114,32 @@ program
     const task = store.assign(sessionId, description);
     await store.save();
     console.log(`Assigned task ${task.id} to "${sessionId}": ${description}`);
+  });
+
+program
+  .command("queue <description>")
+  .description("Add a task to the shared, unclaimed pool for any session to pick up with `macd next`")
+  .action(async (description: string) => {
+    const store = new TaskStore(tasksPath);
+    await store.load();
+    const task = store.assign(UNASSIGNED, description);
+    await store.save();
+    console.log(`Queued task ${task.id}: ${description}`);
+  });
+
+program
+  .command("next <sessionId>")
+  .description("Claim the next pending task for a session (its own, or the oldest unclaimed one) and mark it in_progress")
+  .action(async (sessionId: string) => {
+    const store = new TaskStore(tasksPath);
+    await store.load();
+    const task = store.claimNext(sessionId);
+    if (!task) {
+      console.log(`No pending work for "${sessionId}".`);
+      return;
+    }
+    await store.save();
+    console.log(`${task.id}  ${task.description}`);
   });
 
 program
