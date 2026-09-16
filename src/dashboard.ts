@@ -81,7 +81,8 @@ export function startDashboardServer(storePath: string, port = 0): Promise<Dashb
   const registry = new SessionRegistry(storePath);
 
   const server: Server = createServer((req, res) => {
-    if (req.url === "/api/sessions") {
+    const pathname = new URL(req.url ?? "/", "http://localhost").pathname;
+    if (pathname === "/api/sessions") {
       registry
         .load()
         .then(() => {
@@ -94,7 +95,7 @@ export function startDashboardServer(storePath: string, port = 0): Promise<Dashb
         });
       return;
     }
-    if (req.url === "/" || req.url === "/index.html") {
+    if (pathname === "/" || pathname === "/index.html") {
       res.writeHead(200, { "content-type": "text/html" });
       res.end(PAGE);
       return;
