@@ -46,7 +46,7 @@ Two layers, deliberately decoupled by a `Transport` interface
 
 Session registry, message router, PTY/rendering layer, cross-process
 messaging, task tracking, and a read-only dashboard are all implemented and
-tested (`npm test`, 38 tests passing).
+tested (`npm test`, 48 tests passing).
 
 `agent-deck seed` (`src/seed.ts`) overwrites the sessions/tasks/messages
 stores with a fixed demo fleet, timestamped relative to `now`. It exists so
