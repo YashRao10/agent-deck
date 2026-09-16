@@ -344,11 +344,14 @@ function renderSparkline(messages) {
   }
 }
 
+// Pool-counting logic mirrored in src/dashboard-logic.ts's countPooledTasks,
+// which has unit test coverage this inline copy can't get. Keep them in sync.
 function renderStats(sessions, tasks, messages) {
   const byStatus = (list, key) => list.reduce((acc, item) => { acc[item[key]] = (acc[item[key]] || 0) + 1; return acc; }, {});
   const sessionCounts = byStatus(sessions, "status");
   const taskCounts = byStatus(tasks, "status");
   const activeTasks = (taskCounts.pending || 0) + (taskCounts.in_progress || 0);
+  const pooled = tasks.filter((t) => t.status === "pending" && t.assignedTo === "unassigned").length;
 
   const cards = [
     {
@@ -356,7 +359,11 @@ function renderStats(sessions, tasks, messages) {
       value: sessions.length,
       breakdown: ["idle", "busy", "offline", "crashed"].filter((s) => sessionCounts[s]).map((s) => `<span class="chip ${s}">${sessionCounts[s]} ${s}</span>`).join(""),
     },
-    { label: "Active tasks", value: activeTasks, breakdown: "" },
+    {
+      label: "Active tasks",
+      value: activeTasks,
+      breakdown: pooled ? `<span class="chip pending">${pooled} in pool, unclaimed</span>` : "",
+    },
     { label: "Tasks total", value: tasks.length, breakdown: "" },
     { label: "Messages logged", value: messages.length, breakdown: "" },
   ];

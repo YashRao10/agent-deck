@@ -1,14 +1,23 @@
 /**
- * Pure reference implementations of the two bits of client-side dashboard
- * logic that have actually had bugs (the sparkline's time bucketing, and the
- * entrance-animation dedup that re-triggered on every 2s poll). The dashboard
- * itself renders as one large inline `<script>` inside `src/dashboard.ts`'s
- * HTML template — genuinely browser-only (DOM writes, `document.*`) and not
- * something vitest can import — so these are mirrored by hand into that
- * template rather than shared at runtime. Kept here so the actual algorithm
- * has unit test coverage; if you change the bucketing or dedup logic in
- * `dashboard.ts`, change it here too.
+ * Pure reference implementations of pieces of client-side dashboard logic
+ * (the sparkline's time bucketing and the entrance-animation dedup both
+ * actually had bugs; task-pool counting is here because it's the same kind
+ * of pure logic, not because it's had one yet). The dashboard itself renders
+ * as one large inline `<script>` inside `src/dashboard.ts`'s HTML template —
+ * genuinely browser-only (DOM writes, `document.*`) and not something
+ * vitest can import — so these are mirrored by hand into that template
+ * rather than shared at runtime. Kept here so the actual algorithm has unit
+ * test coverage; if you change one of these in `dashboard.ts`, change it
+ * here too.
  */
+
+import type { Task } from "./types.js";
+import { UNASSIGNED } from "./task-store.js";
+
+/** Counts pending tasks sitting unclaimed in the shared pool (`macd queue`). */
+export function countPooledTasks(tasks: Array<Pick<Task, "status" | "assignedTo">>): number {
+  return tasks.filter((t) => t.status === "pending" && t.assignedTo === UNASSIGNED).length;
+}
 
 /** Buckets message timestamps into fixed-width, most-recent-last windows. */
 export function bucketMessages(
