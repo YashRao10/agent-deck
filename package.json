@@ -3,6 +3,20 @@
   "version": "0.1.0",
   "description": "A terminal multiplexer and orchestration layer for running a fleet of Claude Code sessions as coordinated workers.",
   "license": "MIT",
+  "author": "Yash Rao",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/YashRao10/agent-deck.git"
+  },
+  "homepage": "https://github.com/YashRao10/agent-deck#readme",
+  "bugs": "https://github.com/YashRao10/agent-deck/issues",
+  "keywords": [
+    "claude-code",
+    "cli",
+    "terminal",
+    "orchestration",
+    "multi-agent"
+  ],
   "type": "module",
   "bin": {
     "agent-deck": "./dist/cli.js"
@@ -11,14 +25,17 @@
     "build": "tsc -p .",
     "dev": "tsx src/cli.ts",
     "test": "vitest run",
-    "lint": "eslint src"
+    "lint": "eslint src test"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@types/node": "^22.10.0",
     "@types/react": "^19.3.0",
+    "eslint": "^9.39.5",
     "ink-testing-library": "^4.0.0",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",
+    "typescript-eslint": "^8.70.0",
     "vitest": "^5.0.1"
   },
   "dependencies": {
