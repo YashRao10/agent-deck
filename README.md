@@ -56,7 +56,7 @@ Two layers, deliberately decoupled by a `Transport` interface
 
 Session registry, message router, PTY/rendering layer, cross-process
 messaging, task tracking, and a read-only dashboard are all implemented and
-tested (`npm test`, 59 tests passing).
+tested (`npm test`, 62 tests passing).
 
 `macd seed` (`src/seed.ts`) overwrites the sessions/tasks/messages
 stores with a fixed demo fleet, timestamped relative to `now`. It exists so
@@ -102,7 +102,10 @@ that's either already assigned to it or sitting in that pool, reassigns it
 if it came from the pool, and marks it `in_progress`. A worker session can
 loop on `next` instead of an orchestrator individually pushing every
 assignment; both models share the same `TaskStore`, so a dashboard or
-`tasks` listing doesn't care which one produced a given task.
+`tasks` listing doesn't care which one produced a given task. The
+dashboard's Active tasks stat shows a "N in pool, unclaimed" chip when
+there's anything sitting in the pool, so the two dispatch models stay
+visible at a glance, not just inferable from a task's assignee.
 
 There's also a read-only `macd dashboard` — a small `node:http` server
 (`src/dashboard.ts`, no new dependencies) with a card-based layout: session
