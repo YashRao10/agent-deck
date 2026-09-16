@@ -47,10 +47,10 @@ async function main() {
       )
       .replace(
         "<body>",
-        '<body>\n<a href="../" style="position: fixed; top: 1rem; left: 1rem; z-index: 10; display: inline-flex; ' +
-          "align-items: center; gap: 0.4rem; font-size: 0.82rem; font-weight: 600; color: var(--text-dim); " +
-          "text-decoration: none; background: rgba(255,255,255,0.04); border: 1px solid var(--panel-border); " +
-          'border-radius: 999px; padding: 0.45rem 0.9rem;">&larr; Back to MACD</a>',
+        '<body>\n<a href="../" style="display: flex; align-items: center; justify-content: center; gap: 0.5rem; ' +
+          'width: 100%; box-sizing: border-box; padding: 0.9rem 1rem; font-size: 0.92rem; font-weight: 700; ' +
+          'color: #05070a; text-decoration: none; background: linear-gradient(135deg, var(--accent), var(--accent-2));">' +
+          "&larr; Back to the MACD homepage</a>",
       )
       .replace(
         '<footer>MACD &middot; reflects <code>~/.macd/*.json</code> &middot; no send/assign/control endpoint exists here</footer>',
