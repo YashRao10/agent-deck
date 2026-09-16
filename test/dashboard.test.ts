@@ -3,7 +3,17 @@ import { mkdtemp, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { SessionRegistry } from "../src/registry.js";
-import { startDashboardServer, type DashboardServer } from "../src/dashboard.js";
+import { TaskStore } from "../src/task-store.js";
+import { MessageLog } from "../src/message-log.js";
+import { startDashboardServer, type DashboardPaths, type DashboardServer } from "../src/dashboard.js";
+
+async function pathsIn(dir: string): Promise<DashboardPaths> {
+  return {
+    sessionsPath: join(dir, "sessions.json"),
+    tasksPath: join(dir, "tasks.json"),
+    messagesPath: join(dir, "messages.json"),
+  };
+}
 
 describe("dashboard server", () => {
   let dir: string;
@@ -16,8 +26,8 @@ describe("dashboard server", () => {
 
   it("serves the registry's sessions as JSON", async () => {
     dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
-    const storePath = join(dir, "sessions.json");
-    const registry = new SessionRegistry(storePath);
+    const paths = await pathsIn(dir);
+    const registry = new SessionRegistry(paths.sessionsPath);
     await registry.load();
     registry.register({
       id: "s1",
@@ -28,7 +38,7 @@ describe("dashboard server", () => {
     });
     await registry.save();
 
-    server = await startDashboardServer(storePath);
+    server = await startDashboardServer(paths);
     const res = await fetch(`${server.url}/api/sessions`);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("application/json");
@@ -40,13 +50,13 @@ describe("dashboard server", () => {
 
   it("reflects registry changes written after the server started", async () => {
     dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
-    const storePath = join(dir, "sessions.json");
-    server = await startDashboardServer(storePath);
+    const paths = await pathsIn(dir);
+    server = await startDashboardServer(paths);
 
     let sessions = await (await fetch(`${server.url}/api/sessions`)).json();
     expect(sessions).toEqual([]);
 
-    const registry = new SessionRegistry(storePath);
+    const registry = new SessionRegistry(paths.sessionsPath);
     await registry.load();
     registry.register({
       id: "s2",
@@ -62,26 +72,63 @@ describe("dashboard server", () => {
     expect(sessions[0].name).toBe("worker-2");
   });
 
+  it("serves tasks as JSON, reflecting store changes", async () => {
+    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    const paths = await pathsIn(dir);
+    server = await startDashboardServer(paths);
+
+    let tasks = await (await fetch(`${server.url}/api/tasks`)).json();
+    expect(tasks).toEqual([]);
+
+    const store = new TaskStore(paths.tasksPath);
+    await store.load();
+    store.assign("worker-1", "check CI");
+    await store.save();
+
+    tasks = await (await fetch(`${server.url}/api/tasks`)).json();
+    expect(tasks).toHaveLength(1);
+    expect(tasks[0]).toMatchObject({ assignedTo: "worker-1", description: "check CI", status: "pending" });
+  });
+
+  it("serves the message log as JSON, most recent first", async () => {
+    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    const paths = await pathsIn(dir);
+    const log = new MessageLog(paths.messagesPath);
+    await log.load();
+    log.record("cli", "worker-1", "first");
+    log.record("cli", "worker-1", "second");
+    await log.save();
+
+    server = await startDashboardServer(paths);
+    const messages = await (await fetch(`${server.url}/api/messages`)).json();
+    expect(messages.map((m: { body: string }) => m.body)).toEqual(["second", "first"]);
+  });
+
   it("serves an HTML page at the root", async () => {
     dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
-    server = await startDashboardServer(join(dir, "sessions.json"));
+    server = await startDashboardServer(await pathsIn(dir));
     const res = await fetch(server.url);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/html");
     const body = await res.text();
-    expect(body).toContain("agent-deck sessions");
+    expect(body).toContain("agent-deck");
+    expect(body).toContain("Sessions");
+    expect(body).toContain("Tasks");
+    expect(body).toContain("Activity");
   });
 
   it("404s on unknown paths and never exposes a send/control endpoint", async () => {
     dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
-    server = await startDashboardServer(join(dir, "sessions.json"));
+    server = await startDashboardServer(await pathsIn(dir));
     const res = await fetch(`${server.url}/api/send`, { method: "POST" });
     expect(res.status).toBe(404);
+    const assignRes = await fetch(`${server.url}/api/assign`, { method: "POST" });
+    expect(assignRes.status).toBe(404);
   });
 
   it("ignores a query string on routed paths", async () => {
     dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
-    server = await startDashboardServer(join(dir, "sessions.json"));
+    server = await startDashboardServer(await pathsIn(dir));
 
     const page = await fetch(`${server.url}/?foo=bar`);
     expect(page.status).toBe(200);

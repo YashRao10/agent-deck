@@ -7,8 +7,14 @@ import { SessionRegistry } from "./registry.js";
 import { launchDeck } from "./tui.js";
 import { sendToSessionSocket } from "./ipc.js";
 import { startDashboardServer } from "./dashboard.js";
+import { TaskStore } from "./task-store.js";
+import { MessageLog } from "./message-log.js";
+import type { Task } from "./types.js";
 
 const storePath = join(homedir(), ".agent-deck", "sessions.json");
+const tasksPath = join(homedir(), ".agent-deck", "tasks.json");
+const messagesPath = join(homedir(), ".agent-deck", "messages.json");
+const TASK_STATUSES: Task["status"][] = ["pending", "in_progress", "done", "failed"];
 
 const program = new Command();
 program
@@ -87,6 +93,10 @@ program
     }
     try {
       await sendToSessionSocket(session.socketPath, message);
+      const log = new MessageLog(messagesPath);
+      await log.load();
+      log.record("cli", session.id, message);
+      await log.save();
       console.log(`Sent to "${session.name}" (${session.id}).`);
     } catch (err) {
       console.error(`Failed to reach "${session.name}" (${session.id}):`, (err as Error).message);
@@ -95,11 +105,62 @@ program
   });
 
 program
+  .command("assign <sessionId> <description>")
+  .description("Create a tracked task assigned to a session")
+  .action(async (sessionId: string, description: string) => {
+    const store = new TaskStore(tasksPath);
+    await store.load();
+    const task = store.assign(sessionId, description);
+    await store.save();
+    console.log(`Assigned task ${task.id} to "${sessionId}": ${description}`);
+  });
+
+program
+  .command("tasks")
+  .description("List tracked tasks")
+  .action(async () => {
+    const store = new TaskStore(tasksPath);
+    await store.load();
+    const tasks = store.list();
+    if (tasks.length === 0) {
+      console.log("No tasks yet. Use `agent-deck assign <session-id> <description>`.");
+      return;
+    }
+    for (const t of tasks) {
+      console.log(`${t.id}  ${t.status.padEnd(12)} -> ${t.assignedTo.padEnd(20)} ${t.description}`);
+    }
+  });
+
+program
+  .command("task-status <taskId> <status>")
+  .description(`Update a task's status (${TASK_STATUSES.join("|")})`)
+  .action(async (taskId: string, status: string) => {
+    if (!TASK_STATUSES.includes(status as Task["status"])) {
+      console.error(`Invalid status "${status}". Must be one of: ${TASK_STATUSES.join(", ")}`);
+      process.exitCode = 1;
+      return;
+    }
+    const store = new TaskStore(tasksPath);
+    await store.load();
+    try {
+      const task = store.updateStatus(taskId, status as Task["status"]);
+      await store.save();
+      console.log(`Task ${task.id} -> ${task.status}`);
+    } catch (err) {
+      console.error((err as Error).message);
+      process.exitCode = 1;
+    }
+  });
+
+program
   .command("dashboard")
-  .description("Serve a read-only web view of known agent sessions (no send/control capability)")
+  .description("Serve a read-only web view of sessions, tasks, and activity (no send/control capability)")
   .option("--port <port>", "port to listen on", "4317")
   .action(async (opts: { port: string }) => {
-    const server = await startDashboardServer(storePath, Number(opts.port));
+    const server = await startDashboardServer(
+      { sessionsPath: storePath, tasksPath, messagesPath },
+      Number(opts.port),
+    );
     console.log(`agent-deck dashboard running at ${server.url}`);
     const shutdown = () => {
       server.close().finally(() => process.exit(0));
