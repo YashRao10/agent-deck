@@ -25,7 +25,7 @@ describe("dashboard server", () => {
   });
 
   it("serves the registry's sessions as JSON", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-dash-"));
     const paths = await pathsIn(dir);
     const registry = new SessionRegistry(paths.sessionsPath);
     await registry.load();
@@ -49,7 +49,7 @@ describe("dashboard server", () => {
   });
 
   it("reflects registry changes written after the server started", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-dash-"));
     const paths = await pathsIn(dir);
     server = await startDashboardServer(paths);
 
@@ -73,7 +73,7 @@ describe("dashboard server", () => {
   });
 
   it("serves tasks as JSON, reflecting store changes", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-dash-"));
     const paths = await pathsIn(dir);
     server = await startDashboardServer(paths);
 
@@ -91,7 +91,7 @@ describe("dashboard server", () => {
   });
 
   it("serves the message log as JSON, most recent first", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-dash-"));
     const paths = await pathsIn(dir);
     const log = new MessageLog(paths.messagesPath);
     await log.load();
@@ -105,20 +105,20 @@ describe("dashboard server", () => {
   });
 
   it("serves an HTML page at the root", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-dash-"));
     server = await startDashboardServer(await pathsIn(dir));
     const res = await fetch(server.url);
     expect(res.status).toBe(200);
     expect(res.headers.get("content-type")).toContain("text/html");
     const body = await res.text();
-    expect(body).toContain("agent-deck");
+    expect(body).toContain("MACD");
     expect(body).toContain("Sessions");
     expect(body).toContain("Tasks");
     expect(body).toContain("Activity");
   });
 
   it("404s on unknown paths and never exposes a send/control endpoint", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-dash-"));
     server = await startDashboardServer(await pathsIn(dir));
     const res = await fetch(`${server.url}/api/send`, { method: "POST" });
     expect(res.status).toBe(404);
@@ -127,7 +127,7 @@ describe("dashboard server", () => {
   });
 
   it("ignores a query string on routed paths", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-dash-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-dash-"));
     server = await startDashboardServer(await pathsIn(dir));
 
     const page = await fetch(`${server.url}/?foo=bar`);

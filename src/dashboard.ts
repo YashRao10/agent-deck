@@ -6,7 +6,7 @@ import { MessageLog } from "./message-log.js";
 
 /**
  * A thin, read-only web view of the fleet's persisted state — for showing
- * agent-deck in a browser without cloning the repo and running the CLI. It
+ * MACD (Multi-Agent Command Deck) in a browser without cloning the repo and running the CLI. It
  * only reads the three JSON stores (`sessions.json`, `tasks.json`,
  * `messages.json`) that the CLI already writes to, reloading them on every
  * request; it has no way to send input into a pane, assign a task, or do
@@ -24,7 +24,7 @@ const PAGE = `<!doctype html>
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>agent-deck</title>
+<title>MACD — Multi-Agent Command Deck</title>
 <link rel="icon" href="${FAVICON}" />
 <style>
   :root {
@@ -85,6 +85,10 @@ const PAGE = `<!doctype html>
     display: grid; place-items: center; font-size: 1.3rem; font-weight: 700; color: #05070a;
     box-shadow: 0 8px 24px rgba(88, 166, 255, 0.3);
     flex-shrink: 0;
+  }
+  .brand-eyebrow {
+    font-size: 0.68rem; font-weight: 600; text-transform: uppercase;
+    letter-spacing: 0.08em; color: var(--text-dim); margin: 0 0 0.2rem;
   }
   h1 {
     font-size: 1.85rem; font-weight: 750; margin: 0; letter-spacing: -0.03em;
@@ -254,7 +258,8 @@ const PAGE = `<!doctype html>
     <div class="brand">
       <div class="brand-mark">&gt;_</div>
       <div>
-        <h1>agent-deck</h1>
+        <p class="brand-eyebrow">Multi-Agent Command Deck</p>
+        <h1>MACD</h1>
         <p class="sub" id="tagline">Read-only fleet view</p>
       </div>
     </div>
@@ -268,23 +273,23 @@ const PAGE = `<!doctype html>
     <section class="card">
       <div class="card-head"><div class="title"><span class="dot-icon"></span><h2>Sessions</h2></div><span class="count-pill" id="sessions-count">0</span></div>
       <div class="session-grid" id="sessions"></div>
-      <p class="empty" id="sessions-empty" hidden>No sessions registered yet. Run <code class="mono">agent-deck register</code> or <code class="mono">agent-deck watch</code>.</p>
+      <p class="empty" id="sessions-empty" hidden>No sessions registered yet. Run <code class="mono">macd register</code> or <code class="mono">macd watch</code>.</p>
     </section>
     <section class="card">
       <div class="card-head"><div class="title"><span class="dot-icon"></span><h2>Tasks</h2></div><span class="count-pill" id="tasks-count">0</span></div>
       <div class="board" id="tasks"></div>
-      <p class="empty" id="tasks-empty" hidden>No tasks tracked yet. Run <code class="mono">agent-deck assign</code>.</p>
+      <p class="empty" id="tasks-empty" hidden>No tasks tracked yet. Run <code class="mono">macd assign</code>.</p>
     </section>
   </div>
   <section class="card">
     <div class="card-head"><div class="title"><span class="dot-icon"></span><h2>Activity</h2></div><span class="count-pill" id="activity-count">0</span></div>
     <div class="sparkline" id="sparkline" style="margin-bottom: 1rem;"></div>
     <div class="timeline" id="activity"></div>
-    <p class="empty" id="activity-empty" hidden>No messages sent yet. Run <code class="mono">agent-deck send</code>.</p>
+    <p class="empty" id="activity-empty" hidden>No messages sent yet. Run <code class="mono">macd send</code>.</p>
   </section>
 </div>
 
-<footer>agent-deck &middot; reflects <code>~/.agent-deck/*.json</code> &middot; no send/assign/control endpoint exists here</footer>
+<footer>MACD &middot; reflects <code>~/.macd/*.json</code> &middot; no send/assign/control endpoint exists here</footer>
 
 <script>
 const PALETTE = ["#58a6ff", "#a371f7", "#3fb950", "#e3b341", "#f85149", "#39c5cf"];

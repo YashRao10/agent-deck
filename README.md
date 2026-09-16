@@ -1,6 +1,6 @@
-# agent-deck
+# MACD — Multi-Agent Command Deck
 
-[![CI](https://github.com/YashRao10/agent-deck/actions/workflows/ci.yml/badge.svg)](https://github.com/YashRao10/agent-deck/actions/workflows/ci.yml)
+[![CI](https://github.com/YashRao10/macd/actions/workflows/ci.yml/badge.svg)](https://github.com/YashRao10/macd/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 A terminal multiplexer and orchestration layer for running a **fleet of Claude
@@ -11,16 +11,16 @@ work to others and track what came back.
 This project is its own dogfood case. It's being built across two real
 machines: a Windows session acting as orchestrator ("main") and a MacBook
 session acting as a worker, using exactly the kind of cross-session
-delegation `agent-deck` is meant to formalize and visualize.
+delegation `macd` is meant to formalize and visualize.
 
-![agent-deck watch: two live panes, each running an independent session, with a message routed into each pane from a second terminal via `agent-deck send`](docs/watch-demo.gif)
+![MACD watch: two live panes, each running an independent session, with a message routed into each pane from a second terminal via `macd send`](docs/watch-demo.gif)
 
-`agent-deck watch worker-1 worker-2` above, with a second terminal running
-`agent-deck send worker-1 "..."` / `send worker-2 "..."` to route a message
+`macd watch worker-1 worker-2` above, with a second terminal running
+`macd send worker-1 "..."` / `send worker-2 "..."` to route a message
 into each live pane — the actual orchestration surface. The dashboard below
 is the secondary, read-only visualization on top of the same state:
 
-![agent-deck dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline](docs/dashboard-screenshot.jpg)
+![MACD dashboard: session cards, a 4-lane Kanban task board, and a timeline activity feed with a message-volume sparkline](docs/dashboard-screenshot.jpg)
 
 ## Architecture
 
@@ -58,7 +58,7 @@ Session registry, message router, PTY/rendering layer, cross-process
 messaging, task tracking, and a read-only dashboard are all implemented and
 tested (`npm test`, 53 tests passing).
 
-`agent-deck seed` (`src/seed.ts`) overwrites the sessions/tasks/messages
+`macd seed` (`src/seed.ts`) overwrites the sessions/tasks/messages
 stores with a fixed demo fleet, timestamped relative to `now`. It exists so
 the dashboard looks like the screenshot above on a fresh clone rather than
 showing its empty state — running it twice re-seeds the same fleet rather
@@ -66,9 +66,9 @@ than piling up duplicates, since demo sessions use stable ids instead of
 fresh UUIDs.
 
 `watch` now registers each spawned pane in the same `SessionRegistry` store
-`register`/`list` use, and a new `agent-deck send <session-id> <message>`
+`register`/`list` use, and a new `macd send <session-id> <message>`
 command lets a second terminal/process route a message into a live pane.
-Each spawned pane opens a small unix socket (`~/.agent-deck/sockets/<id>.sock`,
+Each spawned pane opens a small unix socket (`~/.macd/sockets/<id>.sock`,
 a named pipe on Windows); `send` connects to it, and the pane's process runs
 the delivered text through its own `MessageRouter.sendMessage`, which writes
 it into the pane's `ClaudePtyTransport` as a line of input.
@@ -83,18 +83,18 @@ apart internally so an intentional shutdown never gets misreported as a
 crash just because the OS happened to deliver it via a signal. Sessions are
 never removed on exit, so `list` (and the dashboard) still show history.
 
-Tasks get the same cross-process treatment as sessions: `agent-deck assign
+Tasks get the same cross-process treatment as sessions: `macd assign
 <session-id> <description>` creates a task in a persisted `TaskStore`
-(`~/.agent-deck/tasks.json`), `agent-deck tasks` lists them, and
-`agent-deck task-status <task-id> <status>` moves one through
+(`~/.macd/tasks.json`), `macd tasks` lists them, and
+`macd task-status <task-id> <status>` moves one through
 pending/in_progress/done/failed. This is deliberately a separate store from
 `MessageRouter`'s own in-memory task map — the router's version is a
 transient view for a single process (a `watch` pane's own router); the
 `TaskStore` is what the CLI and dashboard read and write across processes.
-Every `send` also appends to a capped `MessageLog` (`~/.agent-deck/messages.json`,
+Every `send` also appends to a capped `MessageLog` (`~/.macd/messages.json`,
 last 200 entries) so there's a record of what's actually been said.
 
-There's also a read-only `agent-deck dashboard` — a small `node:http` server
+There's also a read-only `macd dashboard` — a small `node:http` server
 (`src/dashboard.ts`, no new dependencies) with a card-based layout: session
 cards with a live status indicator and host chip, a 4-lane Kanban board
 (Pending/In Progress/Done/Failed) for tasks, and a timeline-style activity

@@ -12,7 +12,7 @@ describe("TaskStore", () => {
   });
 
   it("assigns and lists tasks", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-tasks-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-tasks-"));
     const store = new TaskStore(join(dir, "tasks.json"));
     await store.load();
     const task = store.assign("worker-1", "check CI");
@@ -21,7 +21,7 @@ describe("TaskStore", () => {
   });
 
   it("persists tasks across load/save cycles", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-tasks-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-tasks-"));
     const storePath = join(dir, "tasks.json");
     const store = new TaskStore(storePath);
     await store.load();
@@ -35,7 +35,7 @@ describe("TaskStore", () => {
   });
 
   it("updates a task's status", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-tasks-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-tasks-"));
     const store = new TaskStore(join(dir, "tasks.json"));
     await store.load();
     const task = store.assign("worker-1", "check CI");
@@ -45,7 +45,7 @@ describe("TaskStore", () => {
   });
 
   it("throws when updating an unknown task", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-tasks-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-tasks-"));
     const store = new TaskStore(join(dir, "tasks.json"));
     await store.load();
     expect(() => store.updateStatus("ghost", "done")).toThrow(/Unknown task/);

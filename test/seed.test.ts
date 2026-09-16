@@ -15,7 +15,7 @@ describe("seedDemoData", () => {
   });
 
   it("populates all three stores", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-seed-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-seed-"));
     const paths = {
       sessionsPath: join(dir, "sessions.json"),
       tasksPath: join(dir, "tasks.json"),
@@ -41,7 +41,7 @@ describe("seedDemoData", () => {
   });
 
   it("is idempotent — re-running does not duplicate sessions", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-seed-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-seed-"));
     const paths = {
       sessionsPath: join(dir, "sessions.json"),
       tasksPath: join(dir, "tasks.json"),

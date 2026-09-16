@@ -1,6 +1,6 @@
 ---
 name: Bug report
-about: Something in agent-deck doesn't work as expected
+about: Something in macd doesn't work as expected
 labels: bug
 ---
 
@@ -17,4 +17,4 @@ labels: bug
 **Environment**
 - OS:
 - Node version:
-- `agent-deck` command that triggered it:
+- `macd` command that triggered it:

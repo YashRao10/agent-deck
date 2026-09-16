@@ -12,7 +12,7 @@ describe("SessionRegistry", () => {
   });
 
   it("registers and lists sessions", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-"));
     const registry = new SessionRegistry(join(dir, "sessions.json"));
     await registry.load();
     registry.register({
@@ -27,7 +27,7 @@ describe("SessionRegistry", () => {
   });
 
   it("persists sessions across load/save cycles", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-"));
     const storePath = join(dir, "sessions.json");
     const registry = new SessionRegistry(storePath);
     await registry.load();
@@ -47,7 +47,7 @@ describe("SessionRegistry", () => {
   });
 
   it("marks status and updates lastSeen", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-"));
     const registry = new SessionRegistry(join(dir, "sessions.json"));
     await registry.load();
     registry.register({

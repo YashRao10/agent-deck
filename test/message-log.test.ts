@@ -12,7 +12,7 @@ describe("MessageLog", () => {
   });
 
   it("records and lists messages most recent first", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-msglog-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-msglog-"));
     const log = new MessageLog(join(dir, "messages.json"));
     await log.load();
     log.record("cli", "worker-1", "first");
@@ -21,7 +21,7 @@ describe("MessageLog", () => {
   });
 
   it("persists across load/save cycles", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-msglog-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-msglog-"));
     const storePath = join(dir, "messages.json");
     const log = new MessageLog(storePath);
     await log.load();
@@ -35,7 +35,7 @@ describe("MessageLog", () => {
   });
 
   it("caps history at 200 entries", async () => {
-    dir = await mkdtemp(join(tmpdir(), "agent-deck-msglog-"));
+    dir = await mkdtemp(join(tmpdir(), "macd-msglog-"));
     const log = new MessageLog(join(dir, "messages.json"));
     await log.load();
     for (let i = 0; i < 205; i++) {
