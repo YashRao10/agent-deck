@@ -49,11 +49,20 @@ it addresses any other session).
 `watch` now registers each spawned pane in the same `SessionRegistry` store
 `register`/`list` use, and a new `agent-deck send <session-id> <message>`
 command lets a second terminal/process route a message into a live pane.
-Each spawned pane opens a small unix socket (`~/.agent-deck/sockets/<id>.sock`);
-`send` connects to it, and the pane's process runs the delivered text through
-its own `MessageRouter.sendMessage`, which writes it into the pane's
-`ClaudePtyTransport` as a line of input. Sessions are marked `offline` (not
-removed) when their `watch` process shuts down, so `list` still shows history.
+Each spawned pane opens a small unix socket (`~/.agent-deck/sockets/<id>.sock`,
+a named pipe on Windows); `send` connects to it, and the pane's process runs
+the delivered text through its own `MessageRouter.sendMessage`, which writes
+it into the pane's `ClaudePtyTransport` as a line of input. Sessions are
+marked `offline` (not removed) when their `watch` process shuts down, so
+`list` still shows history.
+
+There's also a read-only `agent-deck dashboard` — a small `node:http` server
+(`src/dashboard.ts`, no new dependencies) that serves a live-updating HTML
+table of the registry, so the fleet can be shown in a browser without cloning
+the repo and running the CLI. It only reads `~/.agent-deck/sessions.json` on
+every request; it has no send/control endpoint. The terminal UI stays the one
+real control surface — the dashboard is a secondary visualization on top of
+it, not a second implementation of it.
 
 **Note on install:** `node-pty` ships a native `spawn-helper` binary that
 needs its executable bit set by its postinstall script. If your npm/CI
@@ -78,6 +87,9 @@ node dist/cli.js watch a b --command bash
 
 # from a second terminal, route a message into a live pane
 node dist/cli.js send worker-1 "check CI"
+
+# read-only web view of the registry (defaults to http://127.0.0.1:4317)
+node dist/cli.js dashboard
 ```
 
 ## Development
