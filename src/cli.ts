@@ -9,6 +9,7 @@ import { sendToSessionSocket } from "./ipc.js";
 import { startDashboardServer } from "./dashboard.js";
 import { TaskStore } from "./task-store.js";
 import { MessageLog } from "./message-log.js";
+import { seedDemoData } from "./seed.js";
 import type { Task } from "./types.js";
 
 const storePath = join(homedir(), ".agent-deck", "sessions.json");
@@ -150,6 +151,21 @@ program
       console.error((err as Error).message);
       process.exitCode = 1;
     }
+  });
+
+program
+  .command("seed")
+  .description(
+    "Overwrite the sessions/tasks/messages stores with a demo fleet, so `dashboard` has something to show " +
+      "(fresh clone, or before a screenshot). Not for a machine with real sessions you care about — it replaces, not merges.",
+  )
+  .action(async () => {
+    const { sessions, tasks, messages } = await seedDemoData({
+      sessionsPath: storePath,
+      tasksPath,
+      messagesPath,
+    });
+    console.log(`Seeded ${sessions} sessions, ${tasks} tasks, ${messages} messages.`);
   });
 
 program
