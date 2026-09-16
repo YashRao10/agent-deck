@@ -133,3 +133,6 @@ npm install
 npm run dev    # run the CLI via tsx, no build step
 npm test       # vitest
 ```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the full setup, lint/build/test
+loop, and conventions this repo follows.
