@@ -21,6 +21,9 @@
   "bin": {
     "agent-deck": "./dist/cli.js"
   },
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "build": "tsc -p .",
     "dev": "tsx src/cli.ts",
