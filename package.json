@@ -1,15 +1,15 @@
 {
-  "name": "agent-deck",
+  "name": "multi-agent-command-deck",
   "version": "0.1.0",
-  "description": "A terminal multiplexer and orchestration layer for running a fleet of Claude Code sessions as coordinated workers.",
+  "description": "Multi-Agent Command Deck (MACD) — a terminal multiplexer and orchestration layer for running a fleet of Claude Code sessions as coordinated workers.",
   "license": "MIT",
   "author": "Yash Rao",
   "repository": {
     "type": "git",
-    "url": "https://github.com/YashRao10/agent-deck.git"
+    "url": "https://github.com/YashRao10/macd.git"
   },
-  "homepage": "https://github.com/YashRao10/agent-deck#readme",
-  "bugs": "https://github.com/YashRao10/agent-deck/issues",
+  "homepage": "https://github.com/YashRao10/macd#readme",
+  "bugs": "https://github.com/YashRao10/macd/issues",
   "keywords": [
     "claude-code",
     "cli",
@@ -19,7 +19,7 @@
   ],
   "type": "module",
   "bin": {
-    "agent-deck": "./dist/cli.js"
+    "macd": "./dist/cli.js"
   },
   "files": [
     "dist"

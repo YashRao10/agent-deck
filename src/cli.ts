@@ -12,15 +12,15 @@ import { MessageLog } from "./message-log.js";
 import { seedDemoData } from "./seed.js";
 import type { Task } from "./types.js";
 
-const storePath = join(homedir(), ".agent-deck", "sessions.json");
-const tasksPath = join(homedir(), ".agent-deck", "tasks.json");
-const messagesPath = join(homedir(), ".agent-deck", "messages.json");
+const storePath = join(homedir(), ".macd", "sessions.json");
+const tasksPath = join(homedir(), ".macd", "tasks.json");
+const messagesPath = join(homedir(), ".macd", "messages.json");
 const TASK_STATUSES: Task["status"][] = ["pending", "in_progress", "done", "failed"];
 
 const program = new Command();
 program
-  .name("agent-deck")
-  .description("Terminal multiplexer and orchestration layer for a fleet of Claude Code sessions");
+  .name("macd")
+  .description("Multi-Agent Command Deck (MACD) — terminal multiplexer and orchestration layer for a fleet of Claude Code sessions");
 
 program
   .command("list")
@@ -30,7 +30,7 @@ program
     await registry.load();
     const sessions = registry.list();
     if (sessions.length === 0) {
-      console.log("No sessions registered yet. Use `agent-deck register <name>` to add one.");
+      console.log("No sessions registered yet. Use `macd register <name>` to add one.");
       return;
     }
     for (const s of sessions) {
@@ -83,7 +83,7 @@ program
     await registry.load();
     const session = registry.get(sessionId) ?? registry.list().find((s) => s.name === sessionId);
     if (!session) {
-      console.error(`Unknown session "${sessionId}". Run \`agent-deck list\` to see known sessions.`);
+      console.error(`Unknown session "${sessionId}". Run \`macd list\` to see known sessions.`);
       process.exitCode = 1;
       return;
     }
@@ -124,7 +124,7 @@ program
     await store.load();
     const tasks = store.list();
     if (tasks.length === 0) {
-      console.log("No tasks yet. Use `agent-deck assign <session-id> <description>`.");
+      console.log("No tasks yet. Use `macd assign <session-id> <description>`.");
       return;
     }
     for (const t of tasks) {
@@ -177,7 +177,7 @@ program
       { sessionsPath: storePath, tasksPath, messagesPath },
       Number(opts.port),
     );
-    console.log(`agent-deck dashboard running at ${server.url}`);
+    console.log(`macd dashboard running at ${server.url}`);
     const shutdown = () => {
       server.close().finally(() => process.exit(0));
     };

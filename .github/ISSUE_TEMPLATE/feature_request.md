@@ -1,6 +1,6 @@
 ---
 name: Feature request
-about: Suggest something agent-deck should do
+about: Suggest something macd should do
 labels: enhancement
 ---
 

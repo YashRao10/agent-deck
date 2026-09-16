@@ -21,7 +21,7 @@ export interface LaunchDeckOptions {
   storePath?: string;
 }
 
-export const defaultStorePath = (): string => join(homedir(), ".agent-deck", "sessions.json");
+export const defaultStorePath = (): string => join(homedir(), ".macd", "sessions.json");
 
 /**
  * Spawns one ClaudePtyTransport per requested session, registers each in the

@@ -7,8 +7,8 @@ import type { Task } from "./types.js";
  * Persisted, cross-process task tracking — separate from MessageRouter's
  * in-memory task map, which is a transient view for a single process (a
  * `watch` pane's own router). This is the store the CLI and dashboard read
- * and write, so `agent-deck assign` from one terminal shows up in
- * `agent-deck tasks` (or the dashboard) run from another.
+ * and write, so `macd assign` from one terminal shows up in
+ * `macd tasks` (or the dashboard) run from another.
  */
 export class TaskStore {
   private tasks: Task[] = [];

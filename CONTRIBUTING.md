@@ -1,7 +1,8 @@
 # Contributing
 
-`agent-deck` is a solo project, built as its own dogfood case (see the
-README's Architecture section) — but issues and PRs are welcome.
+`macd` (Multi-Agent Command Deck) is a solo project, built as its own dogfood
+case (see the README's Architecture section) — but issues and PRs are
+welcome.
 
 ## Setup
 

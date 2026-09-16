@@ -1,5 +1,5 @@
 #!/bin/bash
-# Scripted sequence for the README demo recording (see scripts/record-gif.sh).
+# Scripted sequence for the README demo recording (see CONTRIBUTING.md).
 # Spawns a two-pane `watch` session, then uses `send` from a second process
 # to route a message into a live pane, so the recording shows the actual
 # cross-process orchestration the split-pane view exists to visualize.
@@ -13,7 +13,7 @@ WATCH_PID=$!
 sleep 3
 node dist/cli.js send demo-a 'echo "hello from another terminal"'
 sleep 2.5
-node dist/cli.js send demo-b 'echo "routed through agent-deck send"'
+node dist/cli.js send demo-b 'echo "routed through macd send"'
 sleep 3.5
 
 kill -INT "$WATCH_PID"

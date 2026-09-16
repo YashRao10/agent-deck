@@ -22,9 +22,9 @@ const isWindowsPipe = process.platform === "win32";
 
 export function socketPathFor(sessionId: string): string {
   if (isWindowsPipe) {
-    return `\\\\.\\pipe\\agent-deck-${sessionId}`;
+    return `\\\\.\\pipe\\macd-${sessionId}`;
   }
-  return join(homedir(), ".agent-deck", "sockets", `${sessionId}.sock`);
+  return join(homedir(), ".macd", "sockets", `${sessionId}.sock`);
 }
 
 export interface SessionSocketServer {

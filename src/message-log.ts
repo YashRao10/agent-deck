@@ -6,7 +6,7 @@ import type { DeckMessage } from "./types.js";
 const MAX_ENTRIES = 200;
 
 /**
- * A capped, persisted record of messages sent through `agent-deck send`, so
+ * A capped, persisted record of messages sent through `macd send`, so
  * the dashboard can show an activity feed of what's actually being said
  * between sessions, not just idle/busy/offline status. Read-only from the
  * dashboard's side — only `send` appends to it.
