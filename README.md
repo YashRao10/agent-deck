@@ -46,7 +46,14 @@ Two layers, deliberately decoupled by a `Transport` interface
 
 Session registry, message router, PTY/rendering layer, cross-process
 messaging, task tracking, and a read-only dashboard are all implemented and
-tested (`npm test`, 36 tests passing).
+tested (`npm test`, 38 tests passing).
+
+`agent-deck seed` (`src/seed.ts`) overwrites the sessions/tasks/messages
+stores with a fixed demo fleet, timestamped relative to `now`. It exists so
+the dashboard looks like the screenshot above on a fresh clone rather than
+showing its empty state — running it twice re-seeds the same fleet rather
+than piling up duplicates, since demo sessions use stable ids instead of
+fresh UUIDs.
 
 `watch` now registers each spawned pane in the same `SessionRegistry` store
 `register`/`list` use, and a new `agent-deck send <session-id> <message>`
@@ -109,6 +116,11 @@ node dist/cli.js send worker-1 "check CI"
 node dist/cli.js assign worker-1 "review the auth PR"
 node dist/cli.js tasks
 node dist/cli.js task-status <task-id> in_progress
+
+# populate a demo fleet (sessions, tasks, message history) so the dashboard
+# has something to show on a fresh clone or before a screenshot — overwrites
+# the stores above, so skip this if you have real sessions registered
+node dist/cli.js seed
 
 # read-only web view of sessions, tasks, and activity (defaults to http://127.0.0.1:4317)
 node dist/cli.js dashboard
