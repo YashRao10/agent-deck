@@ -1,6 +1,6 @@
 {
   "name": "multi-agent-command-deck",
-  "version": "0.1.0",
+  "version": "0.2.1",
   "description": "Multi-Agent Command Deck (MACD) — a terminal multiplexer and orchestration layer for running a fleet of Claude Code sessions as coordinated workers.",
   "license": "MIT",
   "author": "Yash Rao",
