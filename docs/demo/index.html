@@ -194,7 +194,11 @@
   .dim { color: var(--text-faint); font-size: 0.8rem; }
   .empty { color: var(--text-faint); font-size: 0.85rem; padding: 0.75rem 0.25rem; text-align: center; }
 
-  .timeline { position: relative; }
+  .timeline { position: relative; max-height: 620px; overflow-y: auto; padding-right: 0.35rem; }
+  .timeline::-webkit-scrollbar { width: 8px; }
+  .timeline::-webkit-scrollbar-track { background: transparent; }
+  .timeline::-webkit-scrollbar-thumb { background: var(--panel-border); border-radius: 999px; }
+  .timeline::-webkit-scrollbar-thumb:hover { background: var(--text-faint); }
   .feed-item { position: relative; display: flex; gap: 0.7rem; padding: 0 0 1.1rem; }
   .feed-item:last-child { padding-bottom: 0; }
   .feed-item::before {

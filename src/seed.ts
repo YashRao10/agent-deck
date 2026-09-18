@@ -22,37 +22,45 @@ const SEED_SESSIONS: Array<Omit<AgentSession, "id" | "lastSeen"> & { minutesAgo:
   { name: "docs-worker", host: "macbook", status: "idle", minutesAgo: 4 },
   { name: "test-runner", host: "macbook", status: "busy", minutesAgo: 1 },
   { name: "release-worker", host: "windows", status: "offline", minutesAgo: 42 },
+  { name: "ci-runner", host: "linux", status: "idle", minutesAgo: 2 },
   { name: "flaky-worker", host: "macbook", status: "crashed", minutesAgo: 8 },
 ];
 
 const SEED_TASKS: Array<{ assignedTo: string; description: string; status: Task["status"]; hoursAgo: number }> = [
+  { assignedTo: "ci-runner", description: "Wire up CI workflow and lint config", status: "done", hoursAgo: 6 },
+  { assignedTo: "orchestrator", description: "Write CONTRIBUTING guide and issue templates", status: "done", hoursAgo: 4.5 },
   { assignedTo: "docs-worker", description: "Sync README screenshot with the new dashboard layout", status: "done", hoursAgo: 5 },
   { assignedTo: "test-runner", description: "Run full suite on Windows before merge", status: "done", hoursAgo: 3 },
+  { assignedTo: "test-runner", description: "Add regression test for entrance-animation replay bug", status: "done", hoursAgo: 1 },
   { assignedTo: "release-worker", description: "Cut changelog for the dashboard redesign", status: "in_progress", hoursAgo: 2 },
   { assignedTo: "docs-worker", description: "Add sparkline explanation to README", status: "in_progress", hoursAgo: 1.5 },
-  { assignedTo: "test-runner", description: "Add regression test for entrance-animation replay bug", status: "done", hoursAgo: 1 },
-  { assignedTo: "release-worker", description: "Verify node-pty postinstall on a clean CI image", status: "failed", hoursAgo: 0.75 },
+  { assignedTo: "orchestrator", description: "Switch task assignment to pull-based dispatch", status: "in_progress", hoursAgo: 0.9 },
   { assignedTo: "orchestrator", description: "Review dashboard-polish-and-screenshot PR", status: "pending", hoursAgo: 0.3 },
   { assignedTo: "docs-worker", description: "Draft LinkedIn project blurb", status: "pending", hoursAgo: 0.1 },
   { assignedTo: UNASSIGNED, description: "Triage the flaky test in test-runner's suite", status: "pending", hoursAgo: 0.6 },
   { assignedTo: UNASSIGNED, description: "Write a CHANGELOG entry for v0.2.0", status: "pending", hoursAgo: 0.2 },
+  { assignedTo: UNASSIGNED, description: "Fix stale release link in README", status: "pending", hoursAgo: 0.15 },
+  { assignedTo: "release-worker", description: "Verify node-pty postinstall on a clean CI image", status: "failed", hoursAgo: 0.75 },
 ];
 
 const SEED_MESSAGES: Array<{ from: string; to: string; body: string; minutesAgo: number }> = [
+  { from: "orchestrator", to: "ci-runner", body: "kick off the lint + CI workflow check", minutesAgo: 19 },
   { from: "orchestrator", to: "test-runner", body: "kick off the full suite on Windows", minutesAgo: 18 },
   { from: "test-runner", to: "orchestrator", body: "running now, ~2 min", minutesAgo: 17 },
+  { from: "ci-runner", to: "orchestrator", body: "workflow green, lint clean", minutesAgo: 17 },
   { from: "test-runner", to: "orchestrator", body: "36/36 passing, clean build", minutesAgo: 15 },
   { from: "orchestrator", to: "docs-worker", body: "grab a fresh screenshot once the redesign lands", minutesAgo: 14 },
   { from: "orchestrator", to: "release-worker", body: "status on the changelog?", minutesAgo: 12 },
   { from: "release-worker", to: "orchestrator", body: "half done, node-pty postinstall failing on the clean image", minutesAgo: 11 },
-  { from: "docs-worker", to: "orchestrator", body: "screenshot captured, dropping it in docs/", minutesAgo: 9 },
-  { from: "test-runner", to: "orchestrator", body: "added a regression test for the entrance-animation replay bug", minutesAgo: 8 },
   { from: "orchestrator", to: "release-worker", body: "chmod +x the prebuilt spawn-helper as a workaround for now", minutesAgo: 7 },
   { from: "release-worker", to: "orchestrator", body: "that fixed it, retrying the cut", minutesAgo: 6 },
   { from: "docs-worker", to: "orchestrator", body: "README updated with the sparkline explanation", minutesAgo: 5 },
   { from: "orchestrator", to: "docs-worker", body: "nice, one more pass on the LinkedIn blurb when you get a chance", minutesAgo: 3 },
   { from: "test-runner", to: "orchestrator", body: "idle, ready for the next assignment", minutesAgo: 2 },
-  { from: "orchestrator", to: "test-runner", body: "hold for now, waiting on the changelog", minutesAgo: 1 },
+  { from: "orchestrator", to: "ci-runner", body: "ship the CI badge in the README next", minutesAgo: 2 },
+  { from: "docs-worker", to: "orchestrator", body: "also flagging the stale release link in the README, want me to fix it?", minutesAgo: 1 },
+  { from: "orchestrator", to: "docs-worker", body: "yes, filed it as a small pending task, go ahead whenever", minutesAgo: 1 },
+  { from: "orchestrator", to: "test-runner", body: "hold for now, waiting on the changelog", minutesAgo: 0.5 },
 ];
 
 /**
