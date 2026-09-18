@@ -119,6 +119,19 @@ the CLI's `assign`/`send` commands stay the real control surfaces — the
 dashboard is a secondary visualization on top of them, not a second
 implementation of them.
 
+## Known limitations
+
+- **No queue priority or expiry.** `queue`/`next` is FIFO with no priority
+  or timeout, so a task can sit in the shared pool indefinitely if no
+  worker ever calls `next` for it. Deliberate scope choice for now, not an
+  oversight, worth knowing before building anything time-sensitive on top
+  of it.
+- **Local-only, no auth.** The CLI, sockets, and dashboard are built for
+  one person's own machines, not a multi-user or public deployment. The
+  dashboard binds to `127.0.0.1`, has no login and no write endpoints; there
+  is no authentication anywhere in the stack because there's nothing to
+  authenticate against.
+
 **Note on install:** `node-pty` ships a native `spawn-helper` binary that
 needs its executable bit set by its postinstall script. If your npm/CI
 config blocks package install scripts (some sandboxes do by default), you

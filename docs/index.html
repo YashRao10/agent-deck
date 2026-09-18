@@ -78,6 +78,19 @@
   .badges { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; }
   .badges img { display: block; height: 20px; }
 
+  .lede {
+    font-size: 1.2rem; color: var(--text); font-weight: 600; max-width: 600px;
+    margin: 0 auto 1rem; line-height: 1.5;
+  }
+
+  .stat-strip {
+    display: flex; gap: 1.5rem; justify-content: center; flex-wrap: wrap;
+    margin: 2rem 0 0;
+  }
+  .stat { text-align: center; min-width: 130px; }
+  .stat strong { display: block; font-size: 1.15rem; color: var(--text); font-weight: 700; }
+  .stat span { display: block; font-size: 0.8rem; color: var(--text-faint); margin-top: 0.2rem; }
+
   section { padding: 3.5rem 0; border-bottom: 1px solid var(--panel-border); }
   section:last-of-type { border-bottom: none; }
   h2 {
@@ -139,6 +152,10 @@
     <div class="brand-mark">&gt;_</div>
     <p class="eyebrow">Multi-Agent Command Deck</p>
     <h1 class="title">MACD</h1>
+    <p class="lede">
+      Run several AI coding agents at once, and watch, message, and
+      track every one of them from a single place.
+    </p>
     <p class="tagline">
       A terminal multiplexer and orchestration layer for running a
       <strong>fleet of Claude Code sessions</strong> as coordinated workers.
@@ -154,6 +171,11 @@
     <div class="badges">
       <a href="https://github.com/YashRao10/macd/actions/workflows/ci.yml"><img src="https://github.com/YashRao10/macd/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
       <a href="https://github.com/YashRao10/macd/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="MIT License" /></a>
+    </div>
+    <div class="stat-strip">
+      <div class="stat"><strong>62/62</strong><span>tests passing</span></div>
+      <div class="stat"><strong>macOS · Windows · Linux</strong><span>verified cross-platform</span></div>
+      <div class="stat"><strong>2 machines, 1 codebase</strong><span>built via its own live orchestration</span></div>
     </div>
   </div>
 </header>
